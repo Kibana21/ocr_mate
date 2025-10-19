@@ -40,22 +40,25 @@
     <div class="card mb-lg">
       <div class="flex-between" style="align-items: center;">
         <div>
-          <h3>Label Example 2 of 5 <span style="color: var(--text-secondary); font-weight: normal;">(Invoice)</span></h3>
-          <p class="text-muted" style="margin: 0; font-size: var(--font-size-sm);">
+          <h3 id="page-title">Label Example 2 of 5 <span style="color: var(--text-secondary); font-weight: normal;">(Invoice)</span></h3>
+          <p class="text-muted" style="margin: 0; font-size: var(--font-size-sm);" id="page-subtitle">
             Provide correct values for each field to train the Invoice extraction pipeline
+          </p>
+          <p class="text-muted" style="margin: 0; margin-top: var(--spacing-xs); font-size: var(--font-size-xs);" id="document-name">
+            Document: <strong id="doc-filename">invoice_example_002.pdf</strong>
           </p>
         </div>
         <div class="flex-gap">
           <button class="btn btn-secondary" onclick="returnToDocType()">← Back to Invoice</button>
-          <button class="btn btn-secondary">Skip</button>
-          <button class="btn btn-primary" onclick="saveAndNext()">Save & Next →</button>
+          <button class="btn btn-secondary" id="skip-btn">Skip</button>
+          <button class="btn btn-success" onclick="saveChanges()" id="save-btn">Save Changes</button>
         </div>
       </div>
-      <div class="mt-md">
+      <div class="mt-md" id="progress-section">
         <div class="progress">
-          <div class="progress-bar" style="width: 40%;"></div>
+          <div class="progress-bar" id="progress-bar" style="width: 40%;"></div>
         </div>
-        <p class="text-muted" style="margin-top: var(--spacing-xs); font-size: var(--font-size-xs);">
+        <p class="text-muted" style="margin-top: var(--spacing-xs); font-size: var(--font-size-xs);" id="progress-text">
           2 of 5 examples labeled (40%)
         </p>
       </div>
@@ -240,17 +243,114 @@
   </div>
 
   <script>
-    // Get document type from URL parameter
+    // Get URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const documentType = urlParams.get('document_type') || 'unknown';
+    const documentType = urlParams.get('document_type') || 'invoice';
+    const mode = urlParams.get('mode') || 'add'; // 'add' or 'edit'
+    const docId = urlParams.get('doc_id') || null;
+    const docName = urlParams.get('doc_name') || 'invoice_example_002.pdf';
+    const exampleNumber = urlParams.get('example') || '2';
+    const totalExamples = urlParams.get('total') || '5';
 
-    // Update page context based on document type
+    // Mock data for existing examples (in real app, would fetch from API)
+    const existingExamples = {
+      'invoice_example_001.pdf': {
+        invoice_number: 'INV-123456',
+        invoice_date: '2025-10-15',
+        vendor_name: 'ACME Corporation',
+        total_amount: '1890.00',
+        tax_amount: '140.00',
+        due_date: '2025-11-15'
+      },
+      'invoice_example_002.pdf': {
+        invoice_number: 'INV-234567',
+        invoice_date: '2025-10-16',
+        vendor_name: 'TechCorp LLC',
+        total_amount: '2450.00',
+        tax_amount: '196.00',
+        due_date: '2025-11-16'
+      },
+      'invoice_example_003.pdf': {
+        invoice_number: 'INV-345678',
+        invoice_date: '2025-10-17',
+        vendor_name: 'Global Services Inc',
+        total_amount: '3200.00',
+        tax_amount: '256.00',
+        due_date: '2025-11-17'
+      },
+      'invoice_example_004.pdf': {
+        invoice_number: 'INV-456789',
+        invoice_date: '2025-10-18',
+        vendor_name: 'Professional Solutions',
+        total_amount: '1750.00',
+        tax_amount: '140.00',
+        due_date: '2025-11-18'
+      },
+      'invoice_example_005.pdf': {
+        invoice_number: 'INV-567890',
+        invoice_date: '2025-10-19',
+        vendor_name: 'Enterprise Group',
+        total_amount: '4100.00',
+        tax_amount: '328.00',
+        due_date: '2025-11-19'
+      }
+    };
+
+    // Update page based on mode (add new vs edit existing)
     window.addEventListener('DOMContentLoaded', () => {
-      if (documentType !== 'unknown') {
-        const typeName = documentType.charAt(0).toUpperCase() + documentType.slice(1);
-        document.getElementById('breadcrumb-context').textContent = `Annotate ${typeName} Example`;
+      const typeName = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+      document.getElementById('breadcrumb-context').textContent = mode === 'edit'
+        ? `Edit ${typeName} Example`
+        : `Annotate ${typeName} Example`;
+
+      // Update document name
+      document.getElementById('doc-filename').textContent = docName;
+
+      if (mode === 'edit') {
+        // Edit mode: Update UI for editing
+        document.getElementById('page-title').innerHTML =
+          `Edit Example <span style="color: var(--text-secondary); font-weight: normal;">(${typeName})</span>`;
+        document.getElementById('page-subtitle').textContent =
+          `Review and update the labeled fields for this ${typeName} example`;
+
+        // Update button text
+        document.getElementById('save-btn').textContent = 'Save Changes';
+        document.getElementById('save-btn').onclick = saveChanges;
+
+        // Hide skip button and progress bar in edit mode
+        document.getElementById('skip-btn').style.display = 'none';
+        document.getElementById('progress-section').style.display = 'none';
+
+        // Load existing data if available
+        if (existingExamples[docName]) {
+          loadExistingData(existingExamples[docName]);
+        }
+      } else {
+        // Add mode: Sequential labeling
+        document.getElementById('page-title').innerHTML =
+          `Label Example ${exampleNumber} of ${totalExamples} <span style="color: var(--text-secondary); font-weight: normal;">(${typeName})</span>`;
+
+        // Update progress
+        const progress = Math.round((parseInt(exampleNumber) / parseInt(totalExamples)) * 100);
+        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById('progress-text').textContent =
+          `${exampleNumber} of ${totalExamples} examples labeled (${progress}%)`;
+
+        // Update button
+        document.getElementById('save-btn').textContent = 'Save & Next →';
+        document.getElementById('save-btn').onclick = saveAndNext;
       }
     });
+
+    function loadExistingData(data) {
+      // Pre-fill form with existing data
+      for (const [field, value] of Object.entries(data)) {
+        const inputElement = document.getElementById(field);
+        if (inputElement) {
+          inputElement.value = value;
+        }
+      }
+    }
 
     function fillField(fieldId, value) {
       document.getElementById(fieldId).value = value;
@@ -260,10 +360,55 @@
       }, 500);
     }
 
+    function saveChanges() {
+      const typeName = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+
+      // Collect form data
+      const formData = {
+        invoice_number: document.getElementById('invoice_number').value,
+        invoice_date: document.getElementById('invoice_date').value,
+        vendor_name: document.getElementById('vendor_name').value,
+        total_amount: document.getElementById('total_amount').value,
+        tax_amount: document.getElementById('tax_amount').value,
+        due_date: document.getElementById('due_date').value
+      };
+
+      console.log('Saving:', formData);
+
+      alert(`✓ Changes saved successfully for ${docName}!\n\nReturning to Ground Truth Examples...`);
+
+      // Return to ground truth tab
+      returnToDocType();
+    }
+
     function saveAndNext() {
       const typeName = documentType.charAt(0).toUpperCase() + documentType.slice(1);
-      alert(`Ground truth saved for ${typeName} document type!\n\nMoving to next example...`);
-      // In real app: would save to Invoice's ground truth and load next document
+
+      // Collect form data
+      const formData = {
+        invoice_number: document.getElementById('invoice_number').value,
+        invoice_date: document.getElementById('invoice_date').value,
+        vendor_name: document.getElementById('vendor_name').value,
+        total_amount: document.getElementById('total_amount').value,
+        tax_amount: document.getElementById('tax_amount').value,
+        due_date: document.getElementById('due_date').value
+      };
+
+      console.log('Saving:', formData);
+
+      // Check if this is the last example
+      if (parseInt(exampleNumber) >= parseInt(totalExamples)) {
+        alert(`✓ Ground truth saved!\n\nAll ${totalExamples} examples labeled. Ready to optimize pipeline!`);
+        returnToDocType();
+      } else {
+        // Move to next example
+        const nextExample = parseInt(exampleNumber) + 1;
+        alert(`✓ Ground truth saved for example ${exampleNumber}!\n\nMoving to example ${nextExample}...`);
+
+        // In real app: would load next document
+        // For prototype: reload with next example number
+        window.location.href = `03-annotation.html?document_type=${documentType}&mode=add&example=${nextExample}&total=${totalExamples}&doc_name=invoice_example_00${nextExample}.pdf`;
+      }
     }
 
     function returnToDocType() {

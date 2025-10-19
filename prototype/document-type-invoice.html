@@ -682,21 +682,20 @@
     }
 
     function addExample() {
-      // In real app: would open annotation interface scoped to Invoice document type
-      // For prototype: navigate to annotation page with context
-      if (confirm('Open annotation interface for Invoice document type?')) {
-        window.location.href = '03-annotation.html?document_type=invoice';
-      }
+      // Open annotation interface for new example
+      // In real app: would generate upload flow first, then annotation
+      window.location.href = '03-annotation.html?document_type=invoice&mode=add&example=6&total=10';
     }
 
     function editExample(filename) {
-      // In real app: would open annotation interface with pre-loaded example
-      alert(`Edit annotation for ${filename} (Invoice document type)\n\nIn the real app, this would:\n1. Load the document\n2. Pre-fill existing labeled values\n3. Allow you to correct/update labels\n4. Save back to Invoice ground truth`);
+      // Open annotation interface in edit mode with existing data pre-loaded
+      window.location.href = `03-annotation.html?document_type=invoice&mode=edit&doc_name=${filename}`;
     }
 
     function deleteExample(filename) {
       if (confirm(`Delete ground truth example "${filename}"?\n\nThis will remove it from Invoice's training data.`)) {
-        alert(`Deleted ${filename} from Invoice ground truth examples`);
+        alert(`✓ Deleted ${filename} from Invoice ground truth examples.\n\nIn the real app, this would also trigger re-optimization if the pipeline is currently in production.`);
+        // In real app: would refresh the table
       }
     }
 
