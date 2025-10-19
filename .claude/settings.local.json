@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/kartik/Documents/Work/Projects/ocr_mate/**)",
+      "Read(//Users/kartik/Documents/Work/Projects/**)",
+      "Bash(cat /Users/kartik/Documents/Work/Projects/ocr_mate/ocr_mate/.venv/pyvenv.cfg)",
+      "Bash(cat /Users/kartik/Documents/Work/Projects/ocr_mate/ocr_mate/.venv/lib/python3.12/site-packages/pip-25.2.dist-info/RECORD)",
+      "Bash(pip freeze)",
+      "Bash(xargs -I {} basename {} .dist-info)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
