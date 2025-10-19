@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCR Mate - Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="header">
+    <h1>OCR Mate</h1>
+    <p class="subtitle">Intelligent Structured Document Extraction - Powered by DSPy GEPA</p>
+    <nav class="nav">
+      <a href="index.html" class="active">Dashboard</a>
+      <a href="document-types.html">Document Types</a>
+      <a href="process-documents.html">Process</a>
+      <a href="01-model-selector.html">Settings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Welcome Banner -->
+    <div class="card mb-xl">
+      <div style="text-align: center; padding: var(--spacing-xl);">
+        <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--spacing-md);">
+          Welcome to OCR Mate
+        </h2>
+        <p style="font-size: var(--font-size-lg); color: var(--text-secondary); max-width: 800px; margin: 0 auto;">
+          Extract structured data from documents with zero prompt engineering.
+          Inspired by <a href="https://langstruct.dev" target="_blank" style="color: var(--primary-color);">LangStruct</a>,
+          built for business users, powered by GEPA.
+        </p>
+        <div style="margin-top: var(--spacing-xl);">
+          <a href="document-types.html" class="btn btn-primary btn-lg">
+            Create Your First Document Type →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <h2 class="mb-lg">Quick Stats</h2>
+    <div class="metrics-grid mb-xl">
+      <div class="metric-card">
+        <div class="metric-label">Document Types</div>
+        <div class="metric-value">3</div>
+        <div class="metric-change positive">+1 this week</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Documents Processed</div>
+        <div class="metric-value">1,247</div>
+        <div class="metric-change positive">+89 today</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg Accuracy</div>
+        <div class="metric-value">94.2%</div>
+        <div class="metric-change positive">+2.1% improvement</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Active Pipelines</div>
+        <div class="metric-value">3</div>
+        <div class="metric-change text-muted">All optimized</div>
+      </div>
+    </div>
+
+    <!-- Document Types -->
+    <div class="flex-between mb-lg" style="align-items: center;">
+      <h2>Your Document Types</h2>
+      <a href="document-types.html" class="btn btn-primary">+ New Document Type</a>
+    </div>
+
+    <div class="grid grid-3 mb-xl">
+      <!-- Invoice Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Invoice</h3>
+          <p class="card-description">Standard vendor invoices with 15 fields</p>
+        </div>
+        <div class="mb-lg">
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Pipeline Status</span>
+            <span class="badge badge-success">Optimized</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Accuracy</span>
+            <span style="font-weight: 600;">95.3%</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Documents</span>
+            <span style="font-weight: 600;">834</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Model</span>
+            <span style="font-weight: 600;">gpt-4o</span>
+          </div>
+        </div>
+        <div class="flex-gap">
+          <a href="05-results.html" class="btn btn-primary" style="flex: 1;">Process</a>
+          <a href="document-type-invoice.html" class="btn btn-secondary">Manage</a>
+        </div>
+      </div>
+
+      <!-- Receipt Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Receipt</h3>
+          <p class="card-description">Expense receipts with 8 fields</p>
+        </div>
+        <div class="mb-lg">
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Pipeline Status</span>
+            <span class="badge badge-warning">Training</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Accuracy</span>
+            <span style="font-weight: 600;">89.7%</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Documents</span>
+            <span style="font-weight: 600;">312</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Model</span>
+            <span style="font-weight: 600;">claude-3.5</span>
+          </div>
+        </div>
+        <div class="flex-gap">
+          <a href="04-optimization.html" class="btn btn-warning" style="flex: 1;">View Progress</a>
+          <a href="document-types.html" class="btn btn-secondary">Manage</a>
+        </div>
+      </div>
+
+      <!-- W2 Form Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">W2 Tax Form</h3>
+          <p class="card-description">Employee tax forms with 22 fields</p>
+        </div>
+        <div class="mb-lg">
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Pipeline Status</span>
+            <span class="badge badge-success">Optimized</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Accuracy</span>
+            <span style="font-weight: 600;">97.1%</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Documents</span>
+            <span style="font-weight: 600;">101</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Model</span>
+            <span style="font-weight: 600;">gemini-pro</span>
+          </div>
+        </div>
+        <div class="flex-gap">
+          <a href="05-results.html" class="btn btn-primary" style="flex: 1;">Process</a>
+          <a href="document-types.html" class="btn btn-secondary">Manage</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <h2 class="mb-lg">Recent Activity</h2>
+    <div class="card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Accuracy</th>
+            <th>Processed</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>invoice_2024_001.pdf</td>
+            <td>Invoice</td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>98.2%</td>
+            <td>2 mins ago</td>
+            <td><a href="05-results.html" style="color: var(--primary-color);">View</a></td>
+          </tr>
+          <tr>
+            <td>receipt_starbucks.jpg</td>
+            <td>Receipt</td>
+            <td><span class="badge badge-warning">Review Required</span></td>
+            <td>76.4%</td>
+            <td>15 mins ago</td>
+            <td><a href="05-results.html" style="color: var(--primary-color);">Review</a></td>
+          </tr>
+          <tr>
+            <td>w2_employee_smith.pdf</td>
+            <td>W2 Tax Form</td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>99.1%</td>
+            <td>1 hour ago</td>
+            <td><a href="05-results.html" style="color: var(--primary-color);">View</a></td>
+          </tr>
+          <tr>
+            <td>invoice_2024_002.pdf</td>
+            <td>Invoice</td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>96.8%</td>
+            <td>2 hours ago</td>
+            <td><a href="05-results.html" style="color: var(--primary-color);">View</a></td>
+          </tr>
+          <tr>
+            <td>receipt_amazon.pdf</td>
+            <td>Receipt</td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>94.3%</td>
+            <td>3 hours ago</td>
+            <td><a href="05-results.html" style="color: var(--primary-color);">View</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: var(--spacing-2xl); padding: var(--spacing-xl); color: var(--text-secondary);">
+      <p style="font-size: var(--font-size-sm);">
+        OCR Mate - Prototype v1.0 |
+        <a href="https://langstruct.dev" target="_blank" style="color: var(--primary-color);">Inspired by LangStruct</a> |
+        Powered by DSPy GEPA
+      </p>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

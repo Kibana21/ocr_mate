@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Document Type - OCR Mate</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="header">
+    <h1>OCR Mate</h1>
+    <p class="subtitle">Document Type: Invoice</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="document-types.html">Document Types</a>
+      <a href="process-documents.html">Process</a>
+      <a href="01-model-selector.html">Settings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="mb-lg" style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+      <a href="index.html" style="color: var(--primary-color);">Dashboard</a> /
+      <a href="document-types.html" style="color: var(--primary-color);">Document Types</a> /
+      Invoice
+    </div>
+
+    <!-- Document Type Header -->
+    <div class="card mb-xl">
+      <div class="flex-between" style="align-items: flex-start;">
+        <div>
+          <h1 style="font-size: var(--font-size-3xl); margin-bottom: var(--spacing-sm);">Invoice</h1>
+          <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+            Standard vendor invoices with invoice number, date, vendor details, line items, and totals
+          </p>
+          <div class="flex-gap">
+            <span class="badge badge-info">accounting</span>
+            <span class="badge badge-info">finance</span>
+            <span class="badge badge-info">vendor</span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div class="badge badge-success" style="font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">
+            Pipeline Optimized
+          </div>
+          <div style="font-size: var(--font-size-2xl); font-weight: 700; color: var(--success-color);">
+            95.3%
+          </div>
+          <div class="text-muted" style="font-size: var(--font-size-sm);">Accuracy</div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-3 mt-lg" style="padding-top: var(--spacing-lg); border-top: 1px solid var(--border-color);">
+        <div>
+          <div class="text-muted" style="font-size: var(--font-size-sm);">Documents Processed</div>
+          <div style="font-size: var(--font-size-xl); font-weight: 600;">834</div>
+        </div>
+        <div>
+          <div class="text-muted" style="font-size: var(--font-size-sm);">Current Model</div>
+          <div style="font-size: var(--font-size-xl); font-weight: 600;">GPT-4o</div>
+        </div>
+        <div>
+          <div class="text-muted" style="font-size: var(--font-size-sm);">Extraction Fields</div>
+          <div style="font-size: var(--font-size-xl); font-weight: 600;">15</div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex-gap mt-lg">
+        <button class="btn btn-primary" onclick="showTab('process')">Process Documents</button>
+        <button class="btn btn-secondary" onclick="window.location.href='01-model-selector.html'">Change Model</button>
+        <button class="btn btn-secondary">Export Code</button>
+        <button class="btn btn-danger">Delete Type</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card mb-lg">
+      <div class="flex-gap" style="border-bottom: 2px solid var(--border-color); padding-bottom: 0;">
+        <button class="btn btn-secondary tab-btn active" onclick="showTab('schema')" id="tab-schema">
+          Schema (15 fields)
+        </button>
+        <button class="btn btn-secondary tab-btn" onclick="showTab('examples')" id="tab-examples">
+          Ground Truth (5 examples)
+        </button>
+        <button class="btn btn-secondary tab-btn" onclick="showTab('pipeline')" id="tab-pipeline">
+          Pipeline & Optimization
+        </button>
+        <button class="btn btn-secondary tab-btn" onclick="showTab('analytics')" id="tab-analytics">
+          Performance Analytics
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Content: Schema Editor -->
+    <div id="content-schema" class="tab-content active">
+      <div class="card">
+        <div class="card-header">
+          <div class="flex-between">
+            <div>
+              <h2 class="card-title">Extraction Schema</h2>
+              <p class="card-description">Define fields to extract from this document type</p>
+            </div>
+            <button class="btn btn-primary" onclick="addField()">+ Add Field</button>
+          </div>
+        </div>
+
+        <!-- Field List (same as before, but now local to this document type) -->
+        <div class="field-list">
+          <!-- Field 1: Invoice Number -->
+          <div class="field-item">
+            <div class="field-item-header">
+              <div class="field-item-title">1. Invoice Number</div>
+              <div class="field-item-actions">
+                <button class="btn btn-sm btn-secondary">Edit</button>
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </div>
+            </div>
+            <div class="field-item-meta">
+              Type: Text | Required: Yes | Pattern: ^INV-\d{6}$
+            </div>
+            <div class="mt-sm" style="font-size: var(--font-size-xs); color: var(--text-secondary);">
+              💡 Hint: Often appears in top-right corner, may be labeled as "Invoice #" or "Inv No."
+            </div>
+          </div>
+
+          <!-- Field 2: Date -->
+          <div class="field-item">
+            <div class="field-item-header">
+              <div class="field-item-title">2. Invoice Date</div>
+              <div class="field-item-actions">
+                <button class="btn btn-sm btn-secondary">Edit</button>
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </div>
+            </div>
+            <div class="field-item-meta">
+              Type: Date | Required: Yes | Format: YYYY-MM-DD
+            </div>
+          </div>
+
+          <!-- Field 3-7 abbreviated for brevity -->
+          <div class="field-item">
+            <div class="field-item-header">
+              <div class="field-item-title">3. Vendor Name</div>
+              <div class="field-item-actions">
+                <button class="btn btn-sm btn-secondary">Edit</button>
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </div>
+            </div>
+            <div class="field-item-meta">Type: Text | Required: Yes</div>
+          </div>
+
+          <div class="field-item">
+            <div class="field-item-header">
+              <div class="field-item-title">4. Vendor Address</div>
+              <div class="field-item-actions">
+                <button class="btn btn-sm btn-secondary">Edit</button>
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </div>
+            </div>
+            <div class="field-item-meta">Type: Address | Required: No</div>
+          </div>
+
+          <div class="field-item">
+            <div class="field-item-header">
+              <div class="field-item-title">5. Total Amount</div>
+              <div class="field-item-actions">
+                <button class="btn btn-sm btn-secondary">Edit</button>
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </div>
+            </div>
+            <div class="field-item-meta">Type: Currency | Required: Yes | Currency: USD</div>
+          </div>
+
+          <!-- More fields... -->
+          <div style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary);">
+            + 10 more fields (Tax, Due Date, Line Items, etc.)
+          </div>
+        </div>
+
+        <div class="flex-gap mt-xl">
+          <button class="btn btn-success" onclick="saveSchema()">Save Schema</button>
+          <button class="btn btn-primary" onclick="showTab('examples')">
+            Next: Add Ground Truth Examples →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Ground Truth Examples -->
+    <div id="content-examples" class="tab-content" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <div class="flex-between">
+            <div>
+              <h2 class="card-title">Ground Truth Examples</h2>
+              <p class="card-description">Labeled documents used to train the extraction pipeline</p>
+            </div>
+            <button class="btn btn-primary" onclick="addExample()">
+              + Add Example
+            </button>
+          </div>
+        </div>
+
+        <!-- Example List -->
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Labeled By</th>
+              <th>Fields Labeled</th>
+              <th>Date Added</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>invoice_example_001.pdf</td>
+              <td>You</td>
+              <td>15/15</td>
+              <td>Oct 15, 2025</td>
+              <td>
+                <button class="btn btn-sm btn-secondary" onclick="editExample('invoice_example_001.pdf')">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteExample('invoice_example_001.pdf')">Delete</button>
+              </td>
+            </tr>
+            <tr>
+              <td>invoice_example_002.pdf</td>
+              <td>You</td>
+              <td>15/15</td>
+              <td>Oct 15, 2025</td>
+              <td>
+                <button class="btn btn-sm btn-secondary" onclick="editExample('invoice_example_002.pdf')">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteExample('invoice_example_002.pdf')">Delete</button>
+              </td>
+            </tr>
+            <tr>
+              <td>invoice_example_003.pdf</td>
+              <td>You</td>
+              <td>15/15</td>
+              <td>Oct 15, 2025</td>
+              <td>
+                <button class="btn btn-sm btn-secondary" onclick="editExample('invoice_example_003.pdf')">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteExample('invoice_example_003.pdf')">Delete</button>
+              </td>
+            </tr>
+            <tr>
+              <td>invoice_example_004.pdf</td>
+              <td>You</td>
+              <td>14/15</td>
+              <td>Oct 16, 2025</td>
+              <td>
+                <button class="btn btn-sm btn-warning" onclick="editExample('invoice_example_004.pdf')">Complete</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteExample('invoice_example_004.pdf')">Delete</button>
+              </td>
+            </tr>
+            <tr>
+              <td>invoice_example_005.pdf</td>
+              <td>You</td>
+              <td>15/15</td>
+              <td>Oct 16, 2025</td>
+              <td>
+                <button class="btn btn-sm btn-secondary" onclick="editExample('invoice_example_005.pdf')">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteExample('invoice_example_005.pdf')">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="mt-xl" style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md);">
+          <div style="font-weight: 600; margin-bottom: var(--spacing-sm);">
+            ✓ Ready to optimize
+          </div>
+          <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">
+            You have 5 complete ground truth examples. This is sufficient to train your extraction pipeline.
+          </p>
+          <button class="btn btn-primary mt-md" onclick="showTab('pipeline')">
+            Optimize Pipeline with GEPA →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Pipeline & Optimization -->
+    <div id="content-pipeline" class="tab-content" style="display: none;">
+      <div class="card mb-lg">
+        <div class="card-header">
+          <h2 class="card-title">Pipeline Status</h2>
+        </div>
+
+        <div class="grid grid-2 mb-lg">
+          <div>
+            <h3 class="mb-md">Current Pipeline: v3</h3>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">Status:</span>
+              <span class="badge badge-success ml-sm">Production</span>
+            </div>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">Accuracy:</span>
+              <strong> 95.3%</strong>
+            </div>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">Optimized:</span>
+              <strong> Oct 16, 2025</strong>
+            </div>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">Training Examples:</span>
+              <strong> 5</strong>
+            </div>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">GEPA Iterations:</span>
+              <strong> 15</strong>
+            </div>
+          </div>
+          <div>
+            <h3 class="mb-md">Model Configuration</h3>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">Provider:</span>
+              <strong> OpenAI</strong>
+            </div>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">Model:</span>
+              <strong> GPT-4o</strong>
+            </div>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">Avg Speed:</span>
+              <strong> 3.2s per doc</strong>
+            </div>
+            <div class="mb-sm">
+              <span class="text-muted" style="font-size: var(--font-size-sm);">Cost:</span>
+              <strong> $0.08 per doc</strong>
+            </div>
+            <button class="btn btn-sm btn-secondary mt-sm" onclick="window.location.href='01-model-selector.html'">
+              Change Model
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-gap">
+          <button class="btn btn-primary" onclick="window.location.href='04-optimization.html'">
+            Re-optimize Pipeline
+          </button>
+          <button class="btn btn-secondary">View Previous Versions</button>
+        </div>
+      </div>
+
+      <!-- Field Accuracy Breakdown -->
+      <div class="card">
+        <h3 class="mb-md">Field-Level Accuracy</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Accuracy</th>
+              <th>Avg Confidence</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Invoice Number</td>
+              <td>98%</td>
+              <td>97.2%</td>
+              <td><span class="badge badge-success">Excellent</span></td>
+            </tr>
+            <tr>
+              <td>Invoice Date</td>
+              <td>95%</td>
+              <td>94.1%</td>
+              <td><span class="badge badge-success">Excellent</span></td>
+            </tr>
+            <tr>
+              <td>Vendor Name</td>
+              <td>99%</td>
+              <td>98.5%</td>
+              <td><span class="badge badge-success">Excellent</span></td>
+            </tr>
+            <tr>
+              <td>Total Amount</td>
+              <td>89%</td>
+              <td>87.3%</td>
+              <td><span class="badge badge-warning">Needs Review</span></td>
+            </tr>
+            <tr>
+              <td>Tax Amount</td>
+              <td>87%</td>
+              <td>85.1%</td>
+              <td><span class="badge badge-warning">Needs Review</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab Content: Analytics -->
+    <div id="content-analytics" class="tab-content" style="display: none;">
+      <!-- Performance Metrics -->
+      <div class="card mb-lg">
+        <div class="card-header">
+          <h2 class="card-title">Performance Metrics</h2>
+          <p class="card-description">Track extraction performance for Invoice document type</p>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Total Processed</div>
+            <div class="metric-value">834</div>
+            <div class="metric-change positive">+89 this week</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Success Rate</div>
+            <div class="metric-value">97.2%</div>
+            <div class="metric-change positive">+1.5% this month</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg Processing Time</div>
+            <div class="metric-value">3.2s</div>
+            <div class="metric-change positive">-0.3s improvement</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Manual Corrections</div>
+            <div class="metric-value">4.7%</div>
+            <div class="metric-change positive">-2.1% this month</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Processing History -->
+      <div class="card mb-lg">
+        <div class="card-header">
+          <div class="flex-between">
+            <div>
+              <h2 class="card-title">Processing History</h2>
+              <p class="card-description">Real-time view of all Invoice documents being processed</p>
+            </div>
+            <div class="flex-gap">
+              <button class="btn btn-sm btn-secondary" onclick="refreshHistory()">🔄 Refresh</button>
+              <button class="btn btn-sm btn-secondary" onclick="exportHistory()">Export CSV</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="flex-gap mb-lg">
+          <select class="form-select" style="width: 200px;">
+            <option>All Statuses</option>
+            <option>Completed</option>
+            <option>Processing</option>
+            <option>Failed</option>
+            <option>Review Required</option>
+          </select>
+          <select class="form-select" style="width: 200px;">
+            <option>Last 24 hours</option>
+            <option>Last 7 days</option>
+            <option>Last 30 days</option>
+            <option>All time</option>
+          </select>
+          <input type="text" class="form-input" placeholder="Search filename..." style="flex: 1;">
+        </div>
+
+        <!-- Live Processing Queue -->
+        <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+          <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+            <div style="width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; animation: pulse 2s infinite;"></div>
+            <span style="font-weight: 600; font-size: var(--font-size-sm);">
+              Live: 3 documents in queue, 2 processing now
+            </span>
+          </div>
+        </div>
+
+        <!-- Processing Table -->
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Status</th>
+              <th>Accuracy</th>
+              <th>Confidence</th>
+              <th>Processing Time</th>
+              <th>Processed By</th>
+              <th>Timestamp</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Live Processing (animated) -->
+            <tr style="background: rgba(59, 130, 246, 0.05);">
+              <td>
+                <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                  <div class="spinner" style="width: 16px; height: 16px;"></div>
+                  <span>invoice_live_001.pdf</span>
+                </div>
+              </td>
+              <td><span class="badge badge-info">Processing</span></td>
+              <td>-</td>
+              <td>-</td>
+              <td>2.1s elapsed</td>
+              <td>API User</td>
+              <td>Just now</td>
+              <td><button class="btn btn-sm btn-secondary" disabled>View</button></td>
+            </tr>
+            <tr style="background: rgba(59, 130, 246, 0.05);">
+              <td>
+                <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                  <div class="spinner" style="width: 16px; height: 16px;"></div>
+                  <span>invoice_live_002.pdf</span>
+                </div>
+              </td>
+              <td><span class="badge badge-info">Processing</span></td>
+              <td>-</td>
+              <td>-</td>
+              <td>1.8s elapsed</td>
+              <td>Web Upload</td>
+              <td>5 sec ago</td>
+              <td><button class="btn btn-sm btn-secondary" disabled>View</button></td>
+            </tr>
+
+            <!-- Recently Completed -->
+            <tr>
+              <td>invoice_2024_089.pdf</td>
+              <td><span class="badge badge-success">Completed</span></td>
+              <td>98.2%</td>
+              <td>97.1%</td>
+              <td>3.1s</td>
+              <td>API User</td>
+              <td>2 mins ago</td>
+              <td><a href="05-results.html" class="btn btn-sm btn-primary">View</a></td>
+            </tr>
+            <tr>
+              <td>invoice_2024_088.pdf</td>
+              <td><span class="badge badge-warning">Review Required</span></td>
+              <td>76.4%</td>
+              <td>68.2%</td>
+              <td>3.4s</td>
+              <td>Web Upload</td>
+              <td>5 mins ago</td>
+              <td><a href="05-results.html" class="btn btn-sm btn-warning">Review</a></td>
+            </tr>
+            <tr>
+              <td>invoice_2024_087.pdf</td>
+              <td><span class="badge badge-success">Completed</span></td>
+              <td>99.1%</td>
+              <td>98.5%</td>
+              <td>2.9s</td>
+              <td>Batch Job</td>
+              <td>8 mins ago</td>
+              <td><a href="05-results.html" class="btn btn-sm btn-primary">View</a></td>
+            </tr>
+            <tr>
+              <td>invoice_2024_086.pdf</td>
+              <td><span class="badge badge-success">Completed</span></td>
+              <td>96.8%</td>
+              <td>95.3%</td>
+              <td>3.2s</td>
+              <td>API User</td>
+              <td>15 mins ago</td>
+              <td><a href="05-results.html" class="btn btn-sm btn-primary">View</a></td>
+            </tr>
+            <tr>
+              <td>invoice_2024_085.pdf</td>
+              <td><span class="badge badge-danger">Failed</span></td>
+              <td>-</td>
+              <td>-</td>
+              <td>0.5s</td>
+              <td>Web Upload</td>
+              <td>20 mins ago</td>
+              <td><button class="btn btn-sm btn-danger">Retry</button></td>
+            </tr>
+            <tr>
+              <td>invoice_2024_084.pdf</td>
+              <td><span class="badge badge-success">Completed</span></td>
+              <td>94.3%</td>
+              <td>92.1%</td>
+              <td>3.5s</td>
+              <td>Batch Job</td>
+              <td>25 mins ago</td>
+              <td><a href="05-results.html" class="btn btn-sm btn-primary">View</a></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="flex-between mt-lg" style="align-items: center;">
+          <div class="text-muted" style="font-size: var(--font-size-sm);">
+            Showing 1-10 of 834 documents
+          </div>
+          <div class="flex-gap">
+            <button class="btn btn-sm btn-secondary" disabled>← Previous</button>
+            <button class="btn btn-sm btn-secondary">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Field-Level Analytics -->
+      <div class="card">
+        <h3 class="mb-md">Field-Level Performance</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Avg Accuracy</th>
+              <th>Avg Confidence</th>
+              <th>Manual Corrections</th>
+              <th>Trend</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Invoice Number</strong></td>
+              <td>98.2%</td>
+              <td>97.1%</td>
+              <td>1.8%</td>
+              <td><span class="text-success">↑ Improving</span></td>
+            </tr>
+            <tr>
+              <td><strong>Invoice Date</strong></td>
+              <td>95.4%</td>
+              <td>94.2%</td>
+              <td>4.6%</td>
+              <td><span class="text-success">↑ Improving</span></td>
+            </tr>
+            <tr>
+              <td><strong>Vendor Name</strong></td>
+              <td>99.1%</td>
+              <td>98.5%</td>
+              <td>0.9%</td>
+              <td><span class="text-success">→ Stable</span></td>
+            </tr>
+            <tr>
+              <td><strong>Total Amount</strong></td>
+              <td>89.3%</td>
+              <td>87.2%</td>
+              <td>10.7%</td>
+              <td><span class="text-warning">↓ Needs Attention</span></td>
+            </tr>
+            <tr>
+              <td><strong>Tax Amount</strong></td>
+              <td>87.1%</td>
+              <td>85.3%</td>
+              <td>12.9%</td>
+              <td><span class="text-warning">↓ Needs Attention</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showTab(tabName) {
+      // Hide all tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+      });
+
+      // Remove active class from all tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.borderBottom = 'none';
+      });
+
+      // Show selected tab content
+      document.getElementById('content-' + tabName).style.display = 'block';
+
+      // Add active class to selected tab button
+      const activeBtn = document.getElementById('tab-' + tabName);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.style.borderBottom = '2px solid var(--primary-color)';
+      }
+    }
+
+    function addField() {
+      alert('Add field modal (would open inline editor for this document type)');
+    }
+
+    function saveSchema() {
+      alert('Schema saved for Invoice document type!');
+    }
+
+    function addExample() {
+      // In real app: would open annotation interface scoped to Invoice document type
+      // For prototype: navigate to annotation page with context
+      if (confirm('Open annotation interface for Invoice document type?')) {
+        window.location.href = '03-annotation.html?document_type=invoice';
+      }
+    }
+
+    function editExample(filename) {
+      // In real app: would open annotation interface with pre-loaded example
+      alert(`Edit annotation for ${filename} (Invoice document type)\n\nIn the real app, this would:\n1. Load the document\n2. Pre-fill existing labeled values\n3. Allow you to correct/update labels\n4. Save back to Invoice ground truth`);
+    }
+
+    function deleteExample(filename) {
+      if (confirm(`Delete ground truth example "${filename}"?\n\nThis will remove it from Invoice's training data.`)) {
+        alert(`Deleted ${filename} from Invoice ground truth examples`);
+      }
+    }
+
+    function refreshHistory() {
+      alert('Refreshing processing history...\n\nIn real app: would fetch latest data via API');
+    }
+
+    function exportHistory() {
+      alert('Exporting processing history to CSV...\n\nIn real app: would download CSV file with all processing records');
+    }
+
+    // Simulate real-time updates (for prototype demonstration)
+    setInterval(() => {
+      // In real app: would use WebSocket or Server-Sent Events to get live updates
+      const liveIndicator = document.querySelector('.live-indicator');
+      if (liveIndicator) {
+        // Just for visual demonstration - blink the indicator
+      }
+    }, 3000);
+  </script>
+
+  <style>
+    .tab-btn {
+      border-radius: 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn.active {
+      border-bottom: 2px solid var(--primary-color);
+      background: transparent;
+    }
+
+    /* Spinner animation */
+    .spinner {
+      border: 2px solid var(--border-color);
+      border-top: 2px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Pulse animation for live indicator */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</body>
+</html>

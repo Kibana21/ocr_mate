@@ -6,7 +6,10 @@
       "Bash(cat /Users/kartik/Documents/Work/Projects/ocr_mate/ocr_mate/.venv/pyvenv.cfg)",
       "Bash(cat /Users/kartik/Documents/Work/Projects/ocr_mate/ocr_mate/.venv/lib/python3.12/site-packages/pip-25.2.dist-info/RECORD)",
       "Bash(pip freeze)",
-      "Bash(xargs -I {} basename {} .dist-info)"
+      "Bash(xargs -I {} basename {} .dist-info)",
+      "Bash(for file in index.html document-types.html document-type-invoice.html 01-model-selector.html 02-schema-editor.html 03-annotation.html 04-optimization.html 05-results.html)",
+      "Bash(do echo \"FILE: $file\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

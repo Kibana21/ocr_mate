@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Selection - OCR Mate</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="header">
+    <h1>OCR Mate</h1>
+    <p class="subtitle">Model Selection - Switch LLMs in One Click</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="document-types.html">Document Types</a>
+      <a href="process-documents.html">Process</a>
+      <a href="01-model-selector.html" class="active">Settings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <div class="card" style="max-width: 900px; margin: 0 auto;">
+      <div class="card-header">
+        <h2 class="card-title">Pipeline Configuration: Invoice</h2>
+        <p class="card-description">Choose your language model. The pipeline will automatically re-optimize for the selected model.</p>
+      </div>
+
+      <!-- Inspired by LangStruct -->
+      <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-xl);">
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0;">
+          💡 <strong>Inspired by LangStruct:</strong> Switch between any LLM provider without changing your schema or code.
+        </p>
+      </div>
+
+      <!-- Current Model -->
+      <div class="mb-xl">
+        <h3 class="mb-md">Current Model</h3>
+        <div style="background: var(--bg-secondary); border: 2px solid var(--primary-color); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div class="flex-between" style="align-items: center;">
+            <div>
+              <div style="font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--spacing-xs);">
+                OpenAI GPT-4o
+              </div>
+              <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                Fast, accurate, good balance of speed and cost
+              </div>
+            </div>
+            <span class="badge badge-success" style="font-size: var(--font-size-sm);">Active</span>
+          </div>
+          <div class="grid grid-3 mt-lg">
+            <div>
+              <div class="text-muted" style="font-size: var(--font-size-xs);">Accuracy</div>
+              <div style="font-weight: 600; font-size: var(--font-size-lg);">95.3%</div>
+            </div>
+            <div>
+              <div class="text-muted" style="font-size: var(--font-size-xs);">Avg Speed</div>
+              <div style="font-weight: 600; font-size: var(--font-size-lg);">3.2s</div>
+            </div>
+            <div>
+              <div class="text-muted" style="font-size: var(--font-size-xs);">Cost/Doc</div>
+              <div style="font-weight: 600; font-size: var(--font-size-lg);">$0.08</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model Selection Tabs -->
+      <div class="mb-lg">
+        <h3 class="mb-md">Select Model Provider</h3>
+        <div class="flex-gap mb-lg">
+          <button class="btn btn-primary" onclick="showProvider('openai')">OpenAI</button>
+          <button class="btn btn-secondary" onclick="showProvider('anthropic')">Anthropic</button>
+          <button class="btn btn-secondary" onclick="showProvider('google')">Google</button>
+          <button class="btn btn-secondary" onclick="showProvider('local')">Local Models</button>
+          <button class="btn btn-secondary" onclick="showProvider('custom')">Custom</button>
+        </div>
+      </div>
+
+      <!-- OpenAI Models -->
+      <div id="openai-models" class="provider-models">
+        <h3 class="mb-md">OpenAI Models</h3>
+        <div class="field-list">
+          <!-- GPT-4o -->
+          <div class="field-item" style="border: 2px solid var(--primary-color);">
+            <div class="field-item-header">
+              <div>
+                <div class="field-item-title" style="font-size: var(--font-size-lg);">GPT-4o</div>
+                <div class="field-item-meta">Most balanced - recommended for production</div>
+              </div>
+              <span class="badge badge-success">Current</span>
+            </div>
+            <div class="grid grid-3 mt-md">
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Est. Accuracy</div>
+                <div style="font-weight: 600;">95%</div>
+              </div>
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Avg Speed</div>
+                <div style="font-weight: 600;">3.2s</div>
+              </div>
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Cost/Doc</div>
+                <div style="font-weight: 600;">$0.08</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GPT-4 Turbo -->
+          <div class="field-item" style="cursor: pointer;" onclick="selectModel('gpt-4-turbo')">
+            <div class="field-item-header">
+              <div>
+                <div class="field-item-title" style="font-size: var(--font-size-lg);">GPT-4 Turbo</div>
+                <div class="field-item-meta">Faster, slightly more expensive</div>
+              </div>
+              <button class="btn btn-sm btn-primary">Select</button>
+            </div>
+            <div class="grid grid-3 mt-md">
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Est. Accuracy</div>
+                <div style="font-weight: 600;">94%</div>
+              </div>
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Avg Speed</div>
+                <div style="font-weight: 600;">2.8s</div>
+              </div>
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Cost/Doc</div>
+                <div style="font-weight: 600;">$0.12</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GPT-3.5 Turbo -->
+          <div class="field-item" style="cursor: pointer;" onclick="selectModel('gpt-3.5-turbo')">
+            <div class="field-item-header">
+              <div>
+                <div class="field-item-title" style="font-size: var(--font-size-lg);">GPT-3.5 Turbo</div>
+                <div class="field-item-meta">Budget option, lower accuracy</div>
+              </div>
+              <button class="btn btn-sm btn-primary">Select</button>
+            </div>
+            <div class="grid grid-3 mt-md">
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Est. Accuracy</div>
+                <div style="font-weight: 600;">88%</div>
+              </div>
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Avg Speed</div>
+                <div style="font-weight: 600;">2.1s</div>
+              </div>
+              <div>
+                <div class="text-muted" style="font-size: var(--font-size-xs);">Cost/Doc</div>
+                <div style="font-weight: 600;">$0.03</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model Comparison Table -->
+      <div class="mt-xl">
+        <h3 class="mb-md">Quick Comparison Across All Providers</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Provider</th>
+              <th>Est. Accuracy</th>
+              <th>Speed</th>
+              <th>Cost/Doc</th>
+              <th>Best For</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(59, 130, 246, 0.05);">
+              <td><strong>GPT-4o</strong></td>
+              <td>OpenAI</td>
+              <td><span class="badge badge-success">95%</span></td>
+              <td>3.2s</td>
+              <td>$0.08</td>
+              <td>Production</td>
+              <td><span class="badge badge-success">Current</span></td>
+            </tr>
+            <tr>
+              <td><strong>Claude 3.5 Sonnet</strong></td>
+              <td>Anthropic</td>
+              <td><span class="badge badge-success">96%</span></td>
+              <td>3.5s</td>
+              <td>$0.09</td>
+              <td>High accuracy</td>
+              <td><button class="btn btn-sm btn-primary">Switch</button></td>
+            </tr>
+            <tr>
+              <td><strong>Claude 3 Opus</strong></td>
+              <td>Anthropic</td>
+              <td><span class="badge badge-success">97%</span></td>
+              <td>5.1s</td>
+              <td>$0.15</td>
+              <td>Complex docs</td>
+              <td><button class="btn btn-sm btn-primary">Switch</button></td>
+            </tr>
+            <tr>
+              <td><strong>Gemini Pro</strong></td>
+              <td>Google</td>
+              <td><span class="badge badge-warning">93%</span></td>
+              <td>2.1s</td>
+              <td>$0.04</td>
+              <td>Budget</td>
+              <td><button class="btn btn-sm btn-primary">Switch</button></td>
+            </tr>
+            <tr>
+              <td><strong>Gemini Flash</strong></td>
+              <td>Google</td>
+              <td><span class="badge badge-warning">90%</span></td>
+              <td>1.5s</td>
+              <td>$0.02</td>
+              <td>High volume</td>
+              <td><button class="btn btn-sm btn-primary">Switch</button></td>
+            </tr>
+            <tr>
+              <td><strong>Llama 3.2</strong></td>
+              <td>Local (Ollama)</td>
+              <td><span class="badge badge-warning">91%</span></td>
+              <td>4.2s</td>
+              <td>$0.00</td>
+              <td>Privacy</td>
+              <td><button class="btn btn-sm btn-primary">Switch</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Warning -->
+      <div class="mt-xl" style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: var(--radius-md); padding: var(--spacing-lg);">
+        <div style="font-weight: 600; margin-bottom: var(--spacing-sm);">⚠ Re-optimization Required</div>
+        <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">
+          Changing models will trigger automatic pipeline re-optimization using GEPA.
+          This typically takes 10-15 minutes and will use your ground truth examples to optimize prompts for the new model.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex-gap mt-xl">
+        <button class="btn btn-secondary" onclick="window.location.href='index.html'">Cancel</button>
+        <button class="btn btn-primary" style="flex: 1;" onclick="switchModel()">
+          Switch Model & Re-optimize
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showProvider(provider) {
+      alert(`Showing ${provider} models (in full version, this would filter the model list)`);
+    }
+
+    function selectModel(model) {
+      alert(`Selected ${model} - Click "Switch Model & Re-optimize" to proceed`);
+    }
+
+    function switchModel() {
+      if (confirm('This will re-optimize your pipeline with the new model. This takes ~15 minutes. Continue?')) {
+        window.location.href = '04-optimization.html';
+      }
+    }
+  </script>
+</body>
+</html>

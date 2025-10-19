@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEPA Optimization - OCR Mate</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="header">
+    <h1>OCR Mate</h1>
+    <p class="subtitle">GEPA Optimization - Invoice Document Type</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="document-types.html">Document Types</a>
+      <a href="process-documents.html">Process</a>
+      <a href="01-model-selector.html">Settings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="mb-lg" style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+      <a href="index.html" style="color: var(--primary-color);">Dashboard</a> /
+      <a href="document-types.html" style="color: var(--primary-color);">Document Types</a> /
+      <a href="document-type-invoice.html" style="color: var(--primary-color);">Invoice</a> /
+      <a href="document-type-invoice.html?tab=pipeline" style="color: var(--primary-color);">Pipeline</a> /
+      <span>Optimization in Progress</span>
+    </div>
+
+    <div class="card" style="max-width: 1200px; margin: 0 auto;">
+      <div class="card-header">
+        <div class="flex-between" style="align-items: center;">
+          <div>
+            <h2 class="card-title">
+              Pipeline Optimization: Invoice v2
+              <span class="badge badge-info" style="margin-left: var(--spacing-md); font-size: var(--font-size-sm);">Invoice</span>
+            </h2>
+            <p class="card-description">GEPA is optimizing prompts based on your 5 ground truth examples</p>
+          </div>
+          <div class="flex-gap">
+            <button class="btn btn-secondary" onclick="window.location.href='document-type-invoice.html?tab=pipeline'">← Back to Invoice</button>
+            <button class="btn btn-danger">Stop Optimization</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="mb-xl">
+        <div class="flex-between mb-md" style="align-items: center;">
+          <div>
+            <h3 style="margin: 0;">Status: Optimizing...</h3>
+            <p class="text-muted" style="margin: 0; font-size: var(--font-size-sm);">
+              Iteration 12 of 15 | Est. time remaining: 3 min 45 sec
+            </p>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: var(--font-size-2xl); font-weight: 700; color: var(--success-color);">
+              94.2%
+            </div>
+            <div class="text-muted" style="font-size: var(--font-size-sm);">Best Accuracy</div>
+          </div>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="progress-bar" style="width: 80%;"></div>
+        </div>
+      </div>
+
+      <!-- Accuracy Trend Chart -->
+      <div class="mb-xl">
+        <h3 class="mb-md">Accuracy Trend</h3>
+        <div class="chart-container" style="height: 400px; background: white; position: relative;">
+          <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0;">
+            <!-- Grid lines -->
+            <line x1="50" y1="50" x2="50" y2="350" stroke="#e5e7eb" stroke-width="2"/>
+            <line x1="50" y1="350" x2="950" y2="350" stroke="#e5e7eb" stroke-width="2"/>
+
+            <!-- Y-axis labels -->
+            <text x="30" y="60" font-size="12" fill="#6b7280">100%</text>
+            <text x="35" y="110" font-size="12" fill="#6b7280">95%</text>
+            <text x="35" y="160" font-size="12" fill="#6b7280">90%</text>
+            <text x="35" y="210" font-size="12" fill="#6b7280">85%</text>
+            <text x="35" y="260" font-size="12" fill="#6b7280">80%</text>
+            <text x="35" y="310" font-size="12" fill="#6b7280">75%</text>
+            <text x="35" y="355" font-size="12" fill="#6b7280">70%</text>
+
+            <!-- X-axis labels -->
+            <text x="100" y="370" font-size="12" fill="#6b7280">2</text>
+            <text x="250" y="370" font-size="12" fill="#6b7280">4</text>
+            <text x="400" y="370" font-size="12" fill="#6b7280">6</text>
+            <text x="550" y="370" font-size="12" fill="#6b7280">8</text>
+            <text x="700" y="370" font-size="12" fill="#6b7280">10</text>
+            <text x="850" y="370" font-size="12" fill="#6b7280">12</text>
+
+            <!-- Accuracy line -->
+            <polyline
+              points="50,310 125,290 200,250 275,230 350,210 425,180 500,160 575,150 650,145 725,140 800,138 875,135"
+              fill="none"
+              stroke="#3b82f6"
+              stroke-width="3"
+            />
+
+            <!-- Data points -->
+            <circle cx="50" cy="310" r="5" fill="#3b82f6"/>
+            <circle cx="125" cy="290" r="5" fill="#3b82f6"/>
+            <circle cx="200" cy="250" r="5" fill="#3b82f6"/>
+            <circle cx="275" cy="230" r="5" fill="#3b82f6"/>
+            <circle cx="350" cy="210" r="5" fill="#3b82f6"/>
+            <circle cx="425" cy="180" r="5" fill="#3b82f6"/>
+            <circle cx="500" cy="160" r="5" fill="#3b82f6"/>
+            <circle cx="575" cy="150" r="5" fill="#3b82f6"/>
+            <circle cx="650" cy="145" r="5" fill="#3b82f6"/>
+            <circle cx="725" cy="140" r="5" fill="#3b82f6"/>
+            <circle cx="800" cy="138" r="5" fill="#3b82f6"/>
+            <circle cx="875" cy="135" r="6" fill="#10b981" stroke="#fff" stroke-width="2"/>
+          </svg>
+          <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #6b7280;">
+            Iterations
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Metrics -->
+      <div class="mb-xl">
+        <h3 class="mb-md">Current Best Metrics</h3>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Overall Accuracy</div>
+            <div class="metric-value">94.2%</div>
+            <div class="metric-change positive">+11.2% from start</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Training Examples</div>
+            <div class="metric-value">5</div>
+            <div class="metric-change text-muted">Ground truth docs</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Validation Accuracy</div>
+            <div class="metric-value">92.8%</div>
+            <div class="metric-change positive">Holdout set</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Iterations</div>
+            <div class="metric-value">12 / 15</div>
+            <div class="metric-change text-muted">3 remaining</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Field-Level Accuracy -->
+      <div class="mb-xl">
+        <h3 class="mb-md">Field-Level Accuracy Breakdown</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Field Name</th>
+              <th>Initial</th>
+              <th>Current</th>
+              <th>Improvement</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Invoice Number</strong></td>
+              <td>92%</td>
+              <td>98%</td>
+              <td class="text-success">+6%</td>
+              <td><span class="badge badge-success">Excellent</span></td>
+            </tr>
+            <tr>
+              <td><strong>Invoice Date</strong></td>
+              <td>88%</td>
+              <td>95%</td>
+              <td class="text-success">+7%</td>
+              <td><span class="badge badge-success">Excellent</span></td>
+            </tr>
+            <tr>
+              <td><strong>Vendor Name</strong></td>
+              <td>95%</td>
+              <td>99%</td>
+              <td class="text-success">+4%</td>
+              <td><span class="badge badge-success">Excellent</span></td>
+            </tr>
+            <tr>
+              <td><strong>Vendor Address</strong></td>
+              <td>78%</td>
+              <td>91%</td>
+              <td class="text-success">+13%</td>
+              <td><span class="badge badge-success">Good</span></td>
+            </tr>
+            <tr>
+              <td><strong>Total Amount</strong></td>
+              <td>82%</td>
+              <td>89%</td>
+              <td class="text-success">+7%</td>
+              <td><span class="badge badge-warning">Needs Review</span></td>
+            </tr>
+            <tr>
+              <td><strong>Tax Amount</strong></td>
+              <td>75%</td>
+              <td>87%</td>
+              <td class="text-success">+12%</td>
+              <td><span class="badge badge-warning">Needs Review</span></td>
+            </tr>
+            <tr>
+              <td><strong>Due Date</strong></td>
+              <td>85%</td>
+              <td>93%</td>
+              <td class="text-success">+8%</td>
+              <td><span class="badge badge-success">Good</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Optimization Log -->
+      <div class="mb-xl">
+        <h3 class="mb-md">Optimization Log</h3>
+        <div style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md); font-family: monospace; font-size: var(--font-size-xs); max-height: 300px; overflow-y: auto;">
+          <div style="color: var(--text-secondary); margin-bottom: var(--spacing-xs);">[12:34:56] Starting GEPA optimization...</div>
+          <div style="color: var(--text-secondary); margin-bottom: var(--spacing-xs);">[12:34:57] Loaded 5 ground truth examples</div>
+          <div style="color: var(--text-secondary); margin-bottom: var(--spacing-xs);">[12:34:58] Created 80/20 train/validation split</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:35:02] Iteration 1/15 - Accuracy: 83.0%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:35:28] Iteration 2/15 - Accuracy: 85.2%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:36:01] Iteration 3/15 - Accuracy: 88.1%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:36:35] Iteration 4/15 - Accuracy: 89.3%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:37:12] Iteration 5/15 - Accuracy: 90.5%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:37:48] Iteration 6/15 - Accuracy: 91.8%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:38:25] Iteration 7/15 - Accuracy: 92.4%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:39:02] Iteration 8/15 - Accuracy: 93.1%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:39:39] Iteration 9/15 - Accuracy: 93.5%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:40:16] Iteration 10/15 - Accuracy: 93.8%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:40:53] Iteration 11/15 - Accuracy: 94.0%</div>
+          <div style="color: var(--success-color); margin-bottom: var(--spacing-xs);">[12:41:30] Iteration 12/15 - Accuracy: 94.2% ← Best so far!</div>
+          <div style="color: var(--primary-color); margin-bottom: var(--spacing-xs);">[12:42:07] Running iteration 13/15...</div>
+        </div>
+      </div>
+
+      <!-- Info Box -->
+      <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: var(--radius-md); padding: var(--spacing-lg);">
+        <div style="font-weight: 600; margin-bottom: var(--spacing-sm);">ℹ️ About GEPA Optimization</div>
+        <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">
+          GEPA (Genetic-Pareto) uses reflective prompt evolution to automatically improve your extraction pipeline.
+          It maintains a Pareto frontier of diverse strategies and uses textual feedback to guide optimization.
+          This typically achieves 10%+ accuracy improvements over 10-20 iterations.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex-gap mt-xl">
+        <button class="btn btn-secondary" onclick="window.location.href='document-type-invoice.html?tab=pipeline'">
+          ← Back to Invoice Pipeline
+        </button>
+        <button class="btn btn-primary" onclick="completeOptimization()" style="flex: 1;">
+          Complete & Deploy Pipeline
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simulate progress
+    let progress = 80;
+    setInterval(() => {
+      if (progress < 100) {
+        progress += 0.5;
+        document.getElementById('progress-bar').style.width = progress + '%';
+      }
+    }, 1000);
+
+    function completeOptimization() {
+      if (confirm('Deploy this optimized pipeline to production for Invoice document type?')) {
+        alert('Pipeline v2 deployed for Invoice!\n\nNew accuracy: 94.2%\n\nYou can now process Invoice documents with the improved pipeline.');
+        window.location.href = 'document-type-invoice.html?tab=pipeline';
+      }
+    }
+  </script>
+</body>
+</html>

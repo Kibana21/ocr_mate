@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Types - OCR Mate</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="header">
+    <h1>OCR Mate</h1>
+    <p class="subtitle">Manage Your Document Types</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="document-types.html" class="active">Document Types</a>
+      <a href="process-documents.html">Process</a>
+      <a href="01-model-selector.html">Settings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="flex-between mb-xl" style="align-items: center;">
+      <div>
+        <h1 style="font-size: var(--font-size-3xl); margin-bottom: var(--spacing-sm);">Document Types</h1>
+        <p class="text-muted">
+          Each document type has its own schema, ground truth examples, and optimized extraction pipeline
+        </p>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="createNewType()">+ Create Document Type</button>
+    </div>
+
+    <!-- Document Type Cards -->
+    <div class="grid grid-3 mb-xl">
+      <!-- Invoice Card -->
+      <div class="card" style="cursor: pointer;" onclick="window.location.href='document-type-invoice.html'">
+        <div class="card-header">
+          <div class="flex-between">
+            <h3 class="card-title">Invoice</h3>
+            <span class="badge badge-success">Optimized</span>
+          </div>
+          <p class="card-description">Standard vendor invoices with 15 fields</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="mb-lg">
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Accuracy</span>
+            <span style="font-weight: 600; color: var(--success-color);">95.3%</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Documents Processed</span>
+            <span style="font-weight: 600;">834</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Ground Truth</span>
+            <span style="font-weight: 600;">5 examples</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Model</span>
+            <span style="font-weight: 600;">GPT-4o</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Last Updated</span>
+            <span style="font-weight: 600;">Oct 16, 2025</span>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="flex-gap" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-primary" style="flex: 1;" onclick="window.location.href='document-type-invoice.html'">
+            Manage
+          </button>
+          <button class="btn btn-sm btn-secondary" onclick="window.location.href='05-results.html'">
+            Process
+          </button>
+        </div>
+      </div>
+
+      <!-- Receipt Card -->
+      <div class="card" style="cursor: pointer;" onclick="alert('Would open Receipt document type detail page')">
+        <div class="card-header">
+          <div class="flex-between">
+            <h3 class="card-title">Receipt</h3>
+            <span class="badge badge-warning">Training</span>
+          </div>
+          <p class="card-description">Expense receipts with 8 fields</p>
+        </div>
+
+        <div class="mb-lg">
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Accuracy</span>
+            <span style="font-weight: 600; color: var(--warning-color);">89.7%</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Documents Processed</span>
+            <span style="font-weight: 600;">312</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Ground Truth</span>
+            <span style="font-weight: 600;">4 examples</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Model</span>
+            <span style="font-weight: 600;">Claude 3.5</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Last Updated</span>
+            <span style="font-weight: 600;">Oct 18, 2025</span>
+          </div>
+        </div>
+
+        <div class="flex-gap" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-warning" style="flex: 1;" onclick="window.location.href='04-optimization.html'">
+            View Training
+          </button>
+          <button class="btn btn-sm btn-secondary" onclick="alert('Manage Receipt')">
+            Manage
+          </button>
+        </div>
+      </div>
+
+      <!-- W2 Form Card -->
+      <div class="card" style="cursor: pointer;" onclick="alert('Would open W2 Form document type detail page')">
+        <div class="card-header">
+          <div class="flex-between">
+            <h3 class="card-title">W2 Tax Form</h3>
+            <span class="badge badge-success">Optimized</span>
+          </div>
+          <p class="card-description">Employee tax forms with 22 fields</p>
+        </div>
+
+        <div class="mb-lg">
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Accuracy</span>
+            <span style="font-weight: 600; color: var(--success-color);">97.1%</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Documents Processed</span>
+            <span style="font-weight: 600;">101</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Ground Truth</span>
+            <span style="font-weight: 600;">7 examples</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Model</span>
+            <span style="font-weight: 600;">Gemini Pro</span>
+          </div>
+          <div class="flex-between mb-sm">
+            <span class="text-muted" style="font-size: var(--font-size-sm);">Last Updated</span>
+            <span style="font-weight: 600;">Oct 10, 2025</span>
+          </div>
+        </div>
+
+        <div class="flex-gap" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-primary" style="flex: 1;" onclick="alert('Manage W2')">
+            Manage
+          </button>
+          <button class="btn btn-sm btn-secondary" onclick="alert('Process W2')">
+            Process
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Templates Section -->
+    <h2 class="mb-lg">Start from Template</h2>
+    <div class="card mb-xl">
+      <p class="text-muted mb-lg">
+        Quick start with pre-configured document types. You can customize the schema and add your own ground truth examples.
+      </p>
+
+      <div class="grid grid-3">
+        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-lg); cursor: pointer;" onclick="createFromTemplate('invoice')">
+          <h4 style="margin-bottom: var(--spacing-sm);">📄 Invoice</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0;">
+            Vendor invoices, bills, purchase orders
+          </p>
+        </div>
+
+        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-lg); cursor: pointer;" onclick="createFromTemplate('receipt')">
+          <h4 style="margin-bottom: var(--spacing-sm);">🧾 Receipt</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0;">
+            Expense receipts, payment confirmations
+          </p>
+        </div>
+
+        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-lg); cursor: pointer;" onclick="createFromTemplate('contract')">
+          <h4 style="margin-bottom: var(--spacing-sm);">📝 Contract</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0;">
+            Legal contracts, agreements, terms
+          </p>
+        </div>
+
+        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-lg); cursor: pointer;" onclick="createFromTemplate('tax-form')">
+          <h4 style="margin-bottom: var(--spacing-sm);">💼 Tax Forms</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0;">
+            W2, 1099, tax returns
+          </p>
+        </div>
+
+        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-lg); cursor: pointer;" onclick="createFromTemplate('id-card')">
+          <h4 style="margin-bottom: var(--spacing-sm);">🪪 ID Cards</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0;">
+            Driver's licenses, passports, IDs
+          </p>
+        </div>
+
+        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-lg); cursor: pointer;" onclick="createFromTemplate('medical')">
+          <h4 style="margin-bottom: var(--spacing-sm);">🏥 Medical Forms</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0;">
+            Insurance forms, medical records
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: var(--radius-md); padding: var(--spacing-lg);">
+      <div style="font-weight: 600; margin-bottom: var(--spacing-sm);">💡 How Document Types Work</div>
+      <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">
+        Each document type is completely independent with its own:
+      </p>
+      <ul style="margin-top: var(--spacing-sm); margin-left: var(--spacing-lg); font-size: var(--font-size-sm); color: var(--text-secondary);">
+        <li><strong>Schema</strong>: Define which fields to extract</li>
+        <li><strong>Ground Truth</strong>: Labeled examples for training</li>
+        <li><strong>Pipeline</strong>: GEPA-optimized extraction model</li>
+        <li><strong>Model</strong>: Choose different LLMs for different document types</li>
+        <li><strong>Analytics</strong>: Track performance over time</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function createNewType() {
+      if (confirm('Create a new document type from scratch?')) {
+        alert('Would navigate to blank document type creation page');
+        // In real app: window.location.href = 'document-type-new.html';
+      }
+    }
+
+    function createFromTemplate(templateName) {
+      if (confirm(`Create new document type from "${templateName}" template?`)) {
+        alert(`Would create new document type with pre-filled ${templateName} schema`);
+        // In real app: window.location.href = 'document-type-new.html?template=' + templateName;
+      }
+    }
+  </script>
+</body>
+</html>

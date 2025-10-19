@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results with Source Attribution - OCR Mate</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .highlight-yellow {
+      background-color: rgba(255, 235, 59, 0.5);
+      transition: all 0.2s;
+    }
+    .split-view {
+      height: calc(100vh - 200px);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>OCR Mate</h1>
+    <p class="subtitle">Extraction Results - Invoice Document Type</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="document-types.html">Document Types</a>
+      <a href="process-documents.html">Process</a>
+      <a href="01-model-selector.html">Settings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="mb-lg" style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+      <a href="index.html" style="color: var(--primary-color);">Dashboard</a> /
+      <a href="document-types.html" style="color: var(--primary-color);">Document Types</a> /
+      <a href="document-type-invoice.html" style="color: var(--primary-color);">Invoice</a> /
+      <a href="document-type-invoice.html?tab=analytics" style="color: var(--primary-color);">Processing History</a> /
+      <span>Results</span>
+    </div>
+
+    <!-- Header -->
+    <div class="card mb-lg">
+      <div class="flex-between" style="align-items: center;">
+        <div>
+          <h2 class="card-title">
+            invoice_2024_001.pdf
+            <span class="badge badge-info" style="margin-left: var(--spacing-md); font-size: var(--font-size-sm);">Invoice</span>
+          </h2>
+          <p class="card-description">
+            Extracted 7 of 7 fields | Overall Confidence: 95.3%
+          </p>
+        </div>
+        <div class="flex-gap">
+          <button class="btn btn-secondary" onclick="window.location.href='document-type-invoice.html?tab=analytics'">← Back to Invoice</button>
+          <button class="btn btn-secondary">← Previous</button>
+          <button class="btn btn-secondary">Next →</button>
+          <button class="btn btn-success">✓ Approve</button>
+          <button class="btn btn-primary">Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LangStruct-inspired note -->
+    <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-xl);">
+      <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0;">
+        💡 <strong>Inspired by LangStruct:</strong> Hover over fields to see source highlighting. Click fields to jump to source location.
+      </p>
+    </div>
+
+    <!-- Split View -->
+    <div class="split-view">
+      <!-- Left: Source Document -->
+      <div class="document-preview">
+        <h3 class="mb-md">Source Document</h3>
+
+        <!-- Mock Invoice with Highlightable Regions -->
+        <div style="background: white; padding: var(--spacing-xl); border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+          <div style="text-align: right; margin-bottom: var(--spacing-lg);">
+            <div id="source-vendor" style="font-weight: 700; font-size: var(--font-size-xl); color: var(--primary-color);">
+              ACME Corporation
+            </div>
+            <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+              123 Business Street, Suite 100<br>
+              San Francisco, CA 94105<br>
+              Phone: (555) 123-4567
+            </div>
+          </div>
+
+          <div style="background: var(--bg-tertiary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+            <h2 style="margin: 0; font-size: var(--font-size-2xl);">INVOICE</h2>
+          </div>
+
+          <div class="grid grid-2 mb-lg">
+            <div>
+              <div style="font-weight: 600; margin-bottom: var(--spacing-sm);">Bill To:</div>
+              <div style="font-size: var(--font-size-sm);">
+                John Smith<br>
+                456 Customer Ave<br>
+                New York, NY 10001
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="margin-bottom: var(--spacing-sm);">
+                <span style="font-weight: 600;">Invoice #:</span>
+                <span id="source-invoice-number">INV-123456</span>
+              </div>
+              <div style="margin-bottom: var(--spacing-sm);">
+                <span style="font-weight: 600;">Date:</span>
+                <span id="source-date">October 15, 2025</span>
+              </div>
+              <div>
+                <span style="font-weight: 600;">Due Date:</span>
+                <span id="source-due-date">November 15, 2025</span>
+              </div>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: var(--spacing-lg);">
+            <thead>
+              <tr style="background: var(--bg-tertiary);">
+                <th style="padding: var(--spacing-sm); text-align: left;">Description</th>
+                <th style="padding: var(--spacing-sm); text-align: right;">Qty</th>
+                <th style="padding: var(--spacing-sm); text-align: right;">Price</th>
+                <th style="padding: var(--spacing-sm); text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: var(--spacing-sm);">Professional Services</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">10</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">$100.00</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">$1,000.00</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: var(--spacing-sm);">Consulting</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">5</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">$150.00</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">$750.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="text-align: right;">
+            <div style="margin-bottom: var(--spacing-sm);">
+              <span style="font-weight: 600;">Subtotal:</span>
+              <span style="margin-left: var(--spacing-md);">$1,750.00</span>
+            </div>
+            <div style="margin-bottom: var(--spacing-sm);">
+              <span style="font-weight: 600;">Tax (8%):</span>
+              <span id="source-tax" style="margin-left: var(--spacing-md);">$140.00</span>
+            </div>
+            <div style="font-size: var(--font-size-xl); font-weight: 700; padding-top: var(--spacing-sm); border-top: 2px solid var(--text-primary);">
+              <span>Total:</span>
+              <span id="source-total" style="margin-left: var(--spacing-md);">$1,890.00</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-muted mt-md" style="font-size: var(--font-size-sm); text-align: center;">
+          💡 Hover over fields on the right to see source highlighting
+        </p>
+      </div>
+
+      <!-- Right: Extracted Data -->
+      <div class="extraction-form">
+        <h3 class="mb-md">Extracted Data</h3>
+
+        <!-- Invoice Number -->
+        <div class="extraction-field"
+             onmouseenter="highlightSource('source-invoice-number')"
+             onmouseleave="unhighlightSource('source-invoice-number')">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Invoice Number</span>
+            <div class="confidence-score">
+              <span class="badge badge-success">98%</span>
+              <span style="font-size: var(--font-size-lg); color: var(--success-color);">✓</span>
+            </div>
+          </div>
+          <div style="font-size: var(--font-size-lg); font-weight: 600; margin-top: var(--spacing-sm);">
+            INV-123456
+          </div>
+          <div class="source-attribution">
+            📍 <strong>Source:</strong> Line 3, top-right | "Invoice #: INV-123456"
+          </div>
+        </div>
+
+        <!-- Invoice Date -->
+        <div class="extraction-field"
+             onmouseenter="highlightSource('source-date')"
+             onmouseleave="unhighlightSource('source-date')">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Invoice Date</span>
+            <div class="confidence-score">
+              <span class="badge badge-success">95%</span>
+              <span style="font-size: var(--font-size-lg); color: var(--success-color);">✓</span>
+            </div>
+          </div>
+          <div style="font-size: var(--font-size-lg); font-weight: 600; margin-top: var(--spacing-sm);">
+            2025-10-15
+          </div>
+          <div class="source-attribution">
+            📍 <strong>Source:</strong> Line 5 | "Date: October 15, 2025"
+          </div>
+        </div>
+
+        <!-- Vendor Name -->
+        <div class="extraction-field"
+             onmouseenter="highlightSource('source-vendor')"
+             onmouseleave="unhighlightSource('source-vendor')">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Vendor Name</span>
+            <div class="confidence-score">
+              <span class="badge badge-success">99%</span>
+              <span style="font-size: var(--font-size-lg); color: var(--success-color);">✓</span>
+            </div>
+          </div>
+          <div style="font-size: var(--font-size-lg); font-weight: 600; margin-top: var(--spacing-sm);">
+            ACME Corporation
+          </div>
+          <div class="source-attribution">
+            📍 <strong>Source:</strong> Top of document | "ACME Corporation"
+          </div>
+        </div>
+
+        <!-- Total Amount -->
+        <div class="extraction-field"
+             onmouseenter="highlightSource('source-total')"
+             onmouseleave="unhighlightSource('source-total')">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Total Amount</span>
+            <div class="confidence-score">
+              <span class="badge badge-warning">89%</span>
+              <span style="font-size: var(--font-size-lg); color: var(--warning-color);">⚠</span>
+            </div>
+          </div>
+          <div style="font-size: var(--font-size-lg); font-weight: 600; margin-top: var(--spacing-sm);">
+            $1,890.00
+          </div>
+          <div class="source-attribution">
+            📍 <strong>Source:</strong> Bottom right | "Total: $1,890.00"
+          </div>
+          <div class="mt-sm">
+            <button class="btn btn-sm btn-secondary">Mark as Correct</button>
+            <button class="btn btn-sm btn-primary">Provide Correction</button>
+          </div>
+        </div>
+
+        <!-- Tax Amount -->
+        <div class="extraction-field"
+             onmouseenter="highlightSource('source-tax')"
+             onmouseleave="unhighlightSource('source-tax')">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Tax Amount</span>
+            <div class="confidence-score">
+              <span class="badge badge-success">91%</span>
+              <span style="font-size: var(--font-size-lg); color: var(--success-color);">✓</span>
+            </div>
+          </div>
+          <div style="font-size: var(--font-size-lg); font-weight: 600; margin-top: var(--spacing-sm);">
+            $140.00
+          </div>
+          <div class="source-attribution">
+            📍 <strong>Source:</strong> Bottom right | "Tax (8%): $140.00"
+          </div>
+        </div>
+
+        <!-- Due Date -->
+        <div class="extraction-field"
+             onmouseenter="highlightSource('source-due-date')"
+             onmouseleave="unhighlightSource('source-due-date')">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Due Date</span>
+            <div class="confidence-score">
+              <span class="badge badge-success">93%</span>
+              <span style="font-size: var(--font-size-lg); color: var(--success-color);">✓</span>
+            </div>
+          </div>
+          <div style="font-size: var(--font-size-lg); font-weight: 600; margin-top: var(--spacing-sm);">
+            2025-11-15
+          </div>
+          <div class="source-attribution">
+            📍 <strong>Source:</strong> Line 6 | "Due Date: November 15, 2025"
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex-gap mt-lg">
+          <button class="btn btn-secondary" style="flex: 1;">Reject & Correct</button>
+          <button class="btn btn-success" style="flex: 2;">✓ Approve All Fields</button>
+        </div>
+
+        <!-- Export Options -->
+        <div class="mt-lg">
+          <h4 class="mb-sm">Export Results</h4>
+          <div class="flex-gap">
+            <button class="btn btn-sm btn-secondary">JSON</button>
+            <button class="btn btn-sm btn-secondary">CSV</button>
+            <button class="btn btn-sm btn-secondary">Excel</button>
+            <button class="btn btn-sm btn-secondary">Copy to Clipboard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function highlightSource(elementId) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.classList.add('highlight-yellow');
+      }
+    }
+
+    function unhighlightSource(elementId) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.classList.remove('highlight-yellow');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Process Documents - OCR Mate</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .upload-zone {
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      text-align: center;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-zone:hover {
+      border-color: var(--primary-color);
+      background: rgba(37, 99, 235, 0.05);
+    }
+    .upload-zone.dragover {
+      border-color: var(--primary-color);
+      background: rgba(37, 99, 235, 0.1);
+    }
+    .file-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-sm);
+    }
+    .queue-item {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+    }
+    .queue-item.processing {
+      border-left: 4px solid var(--primary-color);
+      background: rgba(59, 130, 246, 0.02);
+    }
+    .queue-item.completed {
+      border-left: 4px solid var(--success-color);
+    }
+    .queue-item.failed {
+      border-left: 4px solid var(--danger-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>OCR Mate</h1>
+    <p class="subtitle">Process Documents - Upload and Extract Data</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="document-types.html">Document Types</a>
+      <a href="process-documents.html" class="active">Process</a>
+      <a href="01-model-selector.html">Settings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Upload Section -->
+    <div class="card mb-xl">
+      <div class="card-header">
+        <h2 class="card-title">Upload Documents</h2>
+        <p class="card-description">Upload documents to extract structured data using optimized pipelines</p>
+      </div>
+
+      <!-- Document Type Selection -->
+      <div class="form-group mb-lg">
+        <label class="form-label">Select Document Type</label>
+        <select class="form-select" id="document-type-select" onchange="updateDocTypeInfo()">
+          <option value="">-- Choose a document type --</option>
+          <option value="invoice">Invoice (15 fields, 95.3% accuracy)</option>
+          <option value="receipt">Receipt (8 fields, 92.1% accuracy)</option>
+          <option value="contract">Contract (12 fields, 89.7% accuracy)</option>
+          <option value="tax_form">Tax Form - W2 (24 fields, 96.8% accuracy)</option>
+          <option value="id_card">ID Card (10 fields, 98.2% accuracy)</option>
+          <option value="medical">Medical Record (18 fields, 87.4% accuracy)</option>
+        </select>
+      </div>
+
+      <!-- Document Type Info -->
+      <div id="doc-type-info" style="display: none; background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+        <div class="flex-between" style="align-items: center;">
+          <div>
+            <strong id="doc-type-name">Invoice</strong>
+            <span class="badge badge-success" style="margin-left: var(--spacing-sm);">Optimized</span>
+            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+              Model: <strong id="doc-type-model">GPT-4o</strong> |
+              Fields: <strong id="doc-type-fields">15</strong> |
+              Avg Accuracy: <strong id="doc-type-accuracy">95.3%</strong>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="viewDocumentType()">View Schema</button>
+        </div>
+      </div>
+
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">📄</div>
+        <h3 style="margin-bottom: var(--spacing-sm);">Drag & Drop Files Here</h3>
+        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">or click to browse</p>
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+          Supports: PDF, PNG, JPG, TIFF (Max 10MB per file)
+        </p>
+        <input type="file" id="file-input" multiple accept=".pdf,.png,.jpg,.jpeg,.tiff" style="display: none;" onchange="handleFileSelect(event)">
+      </div>
+
+      <!-- Selected Files List -->
+      <div id="file-list" style="margin-top: var(--spacing-lg); display: none;">
+        <div class="flex-between mb-md" style="align-items: center;">
+          <h3>Selected Files (<span id="file-count">0</span>)</h3>
+          <button class="btn btn-sm btn-secondary" onclick="clearFiles()">Clear All</button>
+        </div>
+        <div id="file-items"></div>
+      </div>
+
+      <!-- Processing Options -->
+      <div style="margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--border-color);">
+        <h3 class="mb-md">Processing Options</h3>
+        <div class="grid grid-2 mb-lg">
+          <div class="form-group">
+            <label class="form-label">
+              <input type="checkbox" checked> Extract with source attribution
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <input type="checkbox"> High confidence only (>90%)
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <input type="checkbox"> Auto-approve confident results
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <input type="checkbox" checked> Send email notification on completion
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex-gap">
+        <button class="btn btn-primary btn-lg" id="process-btn" disabled onclick="processDocuments()">
+          Process Documents
+        </button>
+        <button class="btn btn-secondary">Save as Batch</button>
+      </div>
+    </div>
+
+    <!-- Live Processing Queue -->
+    <div class="card mb-xl">
+      <div class="card-header">
+        <div class="flex-between" style="align-items: center;">
+          <div>
+            <h2 class="card-title">Live Processing Queue</h2>
+            <p class="card-description">Real-time status across all document types</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div style="display: flex; align-items: center; gap: var(--spacing-xs);">
+              <div class="spinner" style="width: 12px; height: 12px;"></div>
+              <span style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                <strong style="color: var(--primary-color);">3</strong> processing
+              </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--spacing-xs);">
+              <div style="width: 8px; height: 8px; background: var(--warning-color); border-radius: 50%;"></div>
+              <span style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                <strong style="color: var(--warning-color);">5</strong> queued
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Processing Items -->
+      <div class="queue-item processing">
+        <div class="flex-between" style="align-items: center; margin-bottom: var(--spacing-sm);">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div class="spinner"></div>
+            <div>
+              <div style="font-weight: 600;">invoice_live_001.pdf</div>
+              <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                <span class="badge badge-info" style="font-size: var(--font-size-xs);">Invoice</span>
+                Started 8s ago • API User
+              </div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div><span class="badge badge-info">Processing</span></div>
+            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+              Extracting fields...
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); height: 6px; overflow: hidden;">
+          <div style="background: var(--primary-color); height: 100%; width: 65%; transition: width 0.3s;"></div>
+        </div>
+      </div>
+
+      <div class="queue-item processing">
+        <div class="flex-between" style="align-items: center; margin-bottom: var(--spacing-sm);">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div class="spinner"></div>
+            <div>
+              <div style="font-weight: 600;">receipt_batch_042.jpg</div>
+              <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                <span class="badge badge-success" style="font-size: var(--font-size-xs);">Receipt</span>
+                Started 12s ago • John Doe
+              </div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div><span class="badge badge-info">Processing</span></div>
+            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+              Running OCR...
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); height: 6px; overflow: hidden;">
+          <div style="background: var(--primary-color); height: 100%; width: 30%; transition: width 0.3s;"></div>
+        </div>
+      </div>
+
+      <div class="queue-item processing">
+        <div class="flex-between" style="align-items: center; margin-bottom: var(--spacing-sm);">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div class="spinner"></div>
+            <div>
+              <div style="font-weight: 600;">contract_2024_q3.pdf</div>
+              <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                <span class="badge badge-warning" style="font-size: var(--font-size-xs);">Contract</span>
+                Started 5s ago • API User
+              </div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div><span class="badge badge-info">Processing</span></div>
+            <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+              Optimizing extraction...
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--bg-secondary); border-radius: var(--radius-sm); height: 6px; overflow: hidden;">
+          <div style="background: var(--primary-color); height: 100%; width: 80%; transition: width 0.3s;"></div>
+        </div>
+      </div>
+
+      <!-- Queued Items (Collapsed) -->
+      <div style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--border-color);">
+        <button class="btn btn-sm btn-secondary" onclick="toggleQueue()">
+          <span id="queue-toggle">Show 5 Queued Documents ▼</span>
+        </button>
+        <div id="queued-items" style="display: none; margin-top: var(--spacing-md);">
+          <div class="queue-item" style="opacity: 0.7;">
+            <div class="flex-between" style="align-items: center;">
+              <div>
+                <div style="font-weight: 600;">invoice_2024_123.pdf</div>
+                <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                  <span class="badge badge-info" style="font-size: var(--font-size-xs);">Invoice</span>
+                  Position #1 in queue
+                </div>
+              </div>
+              <span class="badge badge-secondary">Queued</span>
+            </div>
+          </div>
+          <div class="queue-item" style="opacity: 0.7;">
+            <div class="flex-between" style="align-items: center;">
+              <div>
+                <div style="font-weight: 600;">w2_form_employee_89.pdf</div>
+                <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                  <span class="badge badge-primary" style="font-size: var(--font-size-xs);">Tax Form</span>
+                  Position #2 in queue
+                </div>
+              </div>
+              <span class="badge badge-secondary">Queued</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Completions -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Recent Completions</h2>
+        <p class="card-description">Last 20 processed documents across all types</p>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Accuracy</th>
+            <th>Processing Time</th>
+            <th>Completed</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="queue-item completed" style="border: none;">
+            <td style="font-weight: 600;">invoice_2024_089.pdf</td>
+            <td><span class="badge badge-info">Invoice</span></td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>98.2%</td>
+            <td>3.1s</td>
+            <td>2 mins ago</td>
+            <td>
+              <div class="flex-gap" style="gap: var(--spacing-xs);">
+                <button class="btn btn-sm btn-primary" onclick="window.location.href='05-results.html'">View</button>
+                <button class="btn btn-sm btn-secondary">Export</button>
+              </div>
+            </td>
+          </tr>
+          <tr class="queue-item completed" style="border: none;">
+            <td style="font-weight: 600;">receipt_store_456.jpg</td>
+            <td><span class="badge badge-success">Receipt</span></td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>96.7%</td>
+            <td>2.8s</td>
+            <td>5 mins ago</td>
+            <td>
+              <div class="flex-gap" style="gap: var(--spacing-xs);">
+                <button class="btn btn-sm btn-primary">View</button>
+                <button class="btn btn-sm btn-secondary">Export</button>
+              </div>
+            </td>
+          </tr>
+          <tr class="queue-item completed" style="border: none;">
+            <td style="font-weight: 600;">contract_vendor_abc.pdf</td>
+            <td><span class="badge badge-warning">Contract</span></td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>94.1%</td>
+            <td>4.7s</td>
+            <td>8 mins ago</td>
+            <td>
+              <div class="flex-gap" style="gap: var(--spacing-xs);">
+                <button class="btn btn-sm btn-primary">View</button>
+                <button class="btn btn-sm btn-secondary">Export</button>
+              </div>
+            </td>
+          </tr>
+          <tr class="queue-item failed" style="border: none;">
+            <td style="font-weight: 600;">invoice_damaged_003.pdf</td>
+            <td><span class="badge badge-info">Invoice</span></td>
+            <td><span class="badge badge-danger">Failed</span></td>
+            <td>-</td>
+            <td>1.2s</td>
+            <td>10 mins ago</td>
+            <td>
+              <div class="flex-gap" style="gap: var(--spacing-xs);">
+                <button class="btn btn-sm btn-danger">Retry</button>
+                <button class="btn btn-sm btn-secondary">Details</button>
+              </div>
+            </td>
+          </tr>
+          <tr class="queue-item completed" style="border: none;">
+            <td style="font-weight: 600;">w2_2024_employee_12.pdf</td>
+            <td><span class="badge badge-primary">Tax Form</span></td>
+            <td><span class="badge badge-warning">Review Required</span></td>
+            <td>87.3%</td>
+            <td>5.9s</td>
+            <td>12 mins ago</td>
+            <td>
+              <div class="flex-gap" style="gap: var(--spacing-xs);">
+                <button class="btn btn-sm btn-warning">Review</button>
+                <button class="btn btn-sm btn-secondary">Export</button>
+              </div>
+            </td>
+          </tr>
+          <tr class="queue-item completed" style="border: none;">
+            <td style="font-weight: 600;">id_card_scan_78.jpg</td>
+            <td><span class="badge badge-secondary">ID Card</span></td>
+            <td><span class="badge badge-success">Completed</span></td>
+            <td>99.1%</td>
+            <td>2.2s</td>
+            <td>15 mins ago</td>
+            <td>
+              <div class="flex-gap" style="gap: var(--spacing-xs);">
+                <button class="btn btn-sm btn-primary">View</button>
+                <button class="btn btn-sm btn-secondary">Export</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="text-align: center; padding-top: var(--spacing-lg); border-top: 1px solid var(--border-color);">
+        <button class="btn btn-secondary">Load More</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // File handling
+    let selectedFiles = [];
+
+    // Drag and drop
+    const uploadZone = document.getElementById('upload-zone');
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files);
+      addFiles(files);
+    });
+
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      addFiles(files);
+    }
+
+    function addFiles(files) {
+      selectedFiles = [...selectedFiles, ...files];
+      updateFileList();
+      checkProcessButton();
+    }
+
+    function updateFileList() {
+      const fileList = document.getElementById('file-list');
+      const fileItems = document.getElementById('file-items');
+      const fileCount = document.getElementById('file-count');
+
+      if (selectedFiles.length === 0) {
+        fileList.style.display = 'none';
+        return;
+      }
+
+      fileList.style.display = 'block';
+      fileCount.textContent = selectedFiles.length;
+
+      fileItems.innerHTML = selectedFiles.map((file, index) => `
+        <div class="file-list-item">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div style="font-size: 1.5rem;">📄</div>
+            <div>
+              <div style="font-weight: 600;">${file.name}</div>
+              <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                ${(file.size / 1024 / 1024).toFixed(2)} MB
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="removeFile(${index})">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      updateFileList();
+      checkProcessButton();
+    }
+
+    function clearFiles() {
+      selectedFiles = [];
+      updateFileList();
+      checkProcessButton();
+    }
+
+    function checkProcessButton() {
+      const docType = document.getElementById('document-type-select').value;
+      const processBtn = document.getElementById('process-btn');
+      processBtn.disabled = !(docType && selectedFiles.length > 0);
+    }
+
+    function updateDocTypeInfo() {
+      const select = document.getElementById('document-type-select');
+      const info = document.getElementById('doc-type-info');
+
+      if (select.value) {
+        info.style.display = 'block';
+        // In real app, would fetch this data based on selection
+        const docTypeData = {
+          invoice: { name: 'Invoice', model: 'GPT-4o', fields: '15', accuracy: '95.3%' },
+          receipt: { name: 'Receipt', model: 'GPT-4o-mini', fields: '8', accuracy: '92.1%' },
+          contract: { name: 'Contract', model: 'Claude 3.5 Sonnet', fields: '12', accuracy: '89.7%' },
+          tax_form: { name: 'Tax Form - W2', model: 'GPT-4o', fields: '24', accuracy: '96.8%' },
+          id_card: { name: 'ID Card', model: 'GPT-4o', fields: '10', accuracy: '98.2%' },
+          medical: { name: 'Medical Record', model: 'Claude 3.5 Sonnet', fields: '18', accuracy: '87.4%' }
+        };
+
+        const data = docTypeData[select.value];
+        document.getElementById('doc-type-name').textContent = data.name;
+        document.getElementById('doc-type-model').textContent = data.model;
+        document.getElementById('doc-type-fields').textContent = data.fields;
+        document.getElementById('doc-type-accuracy').textContent = data.accuracy;
+      } else {
+        info.style.display = 'none';
+      }
+
+      checkProcessButton();
+    }
+
+    function viewDocumentType() {
+      const docType = document.getElementById('document-type-select').value;
+      if (docType === 'invoice') {
+        window.location.href = 'document-type-invoice.html';
+      }
+      // In real app, would route to appropriate document type page
+    }
+
+    function processDocuments() {
+      alert(`Processing ${selectedFiles.length} documents as ${document.getElementById('document-type-select').value}...\n\nIn the full version, these would be sent to the backend API and appear in the Live Processing Queue.`);
+    }
+
+    function toggleQueue() {
+      const queuedItems = document.getElementById('queued-items');
+      const toggleBtn = document.getElementById('queue-toggle');
+
+      if (queuedItems.style.display === 'none') {
+        queuedItems.style.display = 'block';
+        toggleBtn.textContent = 'Hide Queued Documents ▲';
+      } else {
+        queuedItems.style.display = 'none';
+        toggleBtn.textContent = 'Show 5 Queued Documents ▼';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annotation - OCR Mate</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .highlight {
+      background-color: yellow;
+      cursor: pointer;
+    }
+    .split-view {
+      height: calc(100vh - 200px);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>OCR Mate</h1>
+    <p class="subtitle">Ground Truth Annotation - Label Your Examples</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="document-types.html">Document Types</a>
+      <a href="process-documents.html">Process</a>
+      <a href="01-model-selector.html">Settings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="mb-lg" style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+      <a href="index.html" style="color: var(--primary-color);">Dashboard</a> /
+      <a href="document-types.html" style="color: var(--primary-color);">Document Types</a> /
+      <a href="document-type-invoice.html" style="color: var(--primary-color);">Invoice</a> /
+      <span id="breadcrumb-context">Ground Truth Examples</span>
+    </div>
+
+    <!-- Progress -->
+    <div class="card mb-lg">
+      <div class="flex-between" style="align-items: center;">
+        <div>
+          <h3>Label Example 2 of 5 <span style="color: var(--text-secondary); font-weight: normal;">(Invoice)</span></h3>
+          <p class="text-muted" style="margin: 0; font-size: var(--font-size-sm);">
+            Provide correct values for each field to train the Invoice extraction pipeline
+          </p>
+        </div>
+        <div class="flex-gap">
+          <button class="btn btn-secondary" onclick="returnToDocType()">← Back to Invoice</button>
+          <button class="btn btn-secondary">Skip</button>
+          <button class="btn btn-primary" onclick="saveAndNext()">Save & Next →</button>
+        </div>
+      </div>
+      <div class="mt-md">
+        <div class="progress">
+          <div class="progress-bar" style="width: 40%;"></div>
+        </div>
+        <p class="text-muted" style="margin-top: var(--spacing-xs); font-size: var(--font-size-xs);">
+          2 of 5 examples labeled (40%)
+        </p>
+      </div>
+    </div>
+
+    <!-- Split View: Document + Form -->
+    <div class="split-view">
+      <!-- Left: Document Preview -->
+      <div class="document-preview">
+        <div class="flex-between mb-md">
+          <h3>Document Preview</h3>
+          <div class="flex-gap">
+            <button class="btn btn-sm btn-secondary">🔍 Zoom In</button>
+            <button class="btn btn-sm btn-secondary">🔍 Zoom Out</button>
+          </div>
+        </div>
+
+        <!-- Mock Invoice Image -->
+        <div style="background: white; padding: var(--spacing-xl); border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+          <div style="text-align: right; margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 700; font-size: var(--font-size-xl); color: var(--primary-color);">
+              ACME Corporation
+            </div>
+            <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+              123 Business Street, Suite 100<br>
+              San Francisco, CA 94105<br>
+              Phone: (555) 123-4567
+            </div>
+          </div>
+
+          <div style="background: var(--bg-tertiary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+            <h2 style="margin: 0; font-size: var(--font-size-2xl);">INVOICE</h2>
+          </div>
+
+          <div class="grid grid-2 mb-lg">
+            <div>
+              <div style="font-weight: 600; margin-bottom: var(--spacing-sm);">Bill To:</div>
+              <div style="font-size: var(--font-size-sm);">
+                John Smith<br>
+                456 Customer Ave<br>
+                New York, NY 10001
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="margin-bottom: var(--spacing-sm);">
+                <span style="font-weight: 600;">Invoice #:</span>
+                <span class="highlight" onclick="fillField('invoice_number', 'INV-123456')">INV-123456</span>
+              </div>
+              <div style="margin-bottom: var(--spacing-sm);">
+                <span style="font-weight: 600;">Date:</span>
+                <span class="highlight" onclick="fillField('invoice_date', '2025-10-15')">October 15, 2025</span>
+              </div>
+              <div>
+                <span style="font-weight: 600;">Due Date:</span>
+                <span class="highlight" onclick="fillField('due_date', '2025-11-15')">November 15, 2025</span>
+              </div>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: var(--spacing-lg);">
+            <thead>
+              <tr style="background: var(--bg-tertiary);">
+                <th style="padding: var(--spacing-sm); text-align: left;">Description</th>
+                <th style="padding: var(--spacing-sm); text-align: right;">Qty</th>
+                <th style="padding: var(--spacing-sm); text-align: right;">Price</th>
+                <th style="padding: var(--spacing-sm); text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: var(--spacing-sm);">Professional Services</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">10</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">$100.00</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">$1,000.00</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: var(--spacing-sm);">Consulting</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">5</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">$150.00</td>
+                <td style="padding: var(--spacing-sm); text-align: right;">$750.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="text-align: right;">
+            <div style="margin-bottom: var(--spacing-sm);">
+              <span style="font-weight: 600;">Subtotal:</span>
+              <span style="margin-left: var(--spacing-md);">$1,750.00</span>
+            </div>
+            <div style="margin-bottom: var(--spacing-sm);">
+              <span style="font-weight: 600;">Tax (8%):</span>
+              <span class="highlight" onclick="fillField('tax_amount', '140.00')" style="margin-left: var(--spacing-md);">$140.00</span>
+            </div>
+            <div style="font-size: var(--font-size-xl); font-weight: 700; padding-top: var(--spacing-sm); border-top: 2px solid var(--text-primary);">
+              <span>Total:</span>
+              <span class="highlight" onclick="fillField('total_amount', '1890.00')" style="margin-left: var(--spacing-md);">$1,890.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- OCR Text -->
+        <div class="mt-lg">
+          <h4 class="mb-sm">OCR Text (click to copy)</h4>
+          <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: var(--radius-md); font-size: var(--font-size-sm); font-family: monospace; max-height: 150px; overflow-y: auto;">
+            ACME Corporation<br>
+            123 Business Street, Suite 100<br>
+            San Francisco, CA 94105<br>
+            INVOICE<br>
+            Invoice #: INV-123456<br>
+            Date: October 15, 2025<br>
+            Due Date: November 15, 2025<br>
+            Bill To: John Smith<br>
+            456 Customer Ave, New York, NY 10001<br>
+            Subtotal: $1,750.00<br>
+            Tax: $140.00<br>
+            Total: $1,890.00
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Extraction Form -->
+      <div class="extraction-form">
+        <h3 class="mb-md">Extraction Fields</h3>
+        <p class="text-muted mb-lg" style="font-size: var(--font-size-sm);">
+          💡 Click highlighted text in the document to auto-fill fields
+        </p>
+
+        <div class="extraction-field" id="field-invoice_number">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Invoice Number</span>
+            <span class="badge badge-success">✓</span>
+          </div>
+          <input type="text" class="form-input" id="invoice_number" value="INV-123456" placeholder="Enter invoice number">
+        </div>
+
+        <div class="extraction-field" id="field-invoice_date">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Invoice Date</span>
+            <span class="badge badge-success">✓</span>
+          </div>
+          <input type="date" class="form-input" id="invoice_date" value="2025-10-15">
+        </div>
+
+        <div class="extraction-field" id="field-vendor_name">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Vendor Name</span>
+            <span class="badge badge-success">✓</span>
+          </div>
+          <input type="text" class="form-input" id="vendor_name" value="ACME Corporation" placeholder="Enter vendor name">
+        </div>
+
+        <div class="extraction-field" id="field-total_amount">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Total Amount</span>
+            <span class="badge badge-success">✓</span>
+          </div>
+          <input type="number" class="form-input" id="total_amount" value="1890.00" placeholder="0.00" step="0.01">
+        </div>
+
+        <div class="extraction-field" id="field-tax_amount">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Tax Amount</span>
+            <span class="badge badge-success">✓</span>
+          </div>
+          <input type="number" class="form-input" id="tax_amount" value="140.00" placeholder="0.00" step="0.01">
+        </div>
+
+        <div class="extraction-field" id="field-due_date">
+          <div class="extraction-field-header">
+            <span class="extraction-field-title">Due Date</span>
+            <span class="badge badge-success">✓</span>
+          </div>
+          <input type="date" class="form-input" id="due_date" value="2025-11-15">
+        </div>
+
+        <div class="flex-gap mt-lg">
+          <button class="btn btn-secondary">Clear All</button>
+          <button class="btn btn-success">Auto-fill from OCR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Get document type from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const documentType = urlParams.get('document_type') || 'unknown';
+
+    // Update page context based on document type
+    window.addEventListener('DOMContentLoaded', () => {
+      if (documentType !== 'unknown') {
+        const typeName = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+        document.getElementById('breadcrumb-context').textContent = `Annotate ${typeName} Example`;
+      }
+    });
+
+    function fillField(fieldId, value) {
+      document.getElementById(fieldId).value = value;
+      document.getElementById('field-' + fieldId).classList.add('highlighted');
+      setTimeout(() => {
+        document.getElementById('field-' + fieldId).classList.remove('highlighted');
+      }, 500);
+    }
+
+    function saveAndNext() {
+      const typeName = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+      alert(`Ground truth saved for ${typeName} document type!\n\nMoving to next example...`);
+      // In real app: would save to Invoice's ground truth and load next document
+    }
+
+    function returnToDocType() {
+      // Return to the document type detail page
+      if (documentType === 'invoice') {
+        window.location.href = 'document-type-invoice.html?tab=examples';
+      } else {
+        window.location.href = 'document-types.html';
+      }
+    }
+  </script>
+</body>
+</html>
