@@ -365,40 +365,84 @@ optimized_pipeline = optimizer.compile(
 - Result rendering with validation status
 - Export functionality (multiple formats)
 
-#### 3.3.2 Batch Processing
-**User Story**: As a user, I want to process hundreds of documents at once so I can automate my workflow.
+#### 3.3.2 Batch Processing & Global Processing Hub
+**User Story**: As a user, I want to process hundreds of documents at once and monitor processing across all document types in real-time.
 
-**Acceptance Criteria**:
-- User uploads ZIP file or multiple files
-- System queues documents for processing
-- User sees batch processing dashboard:
-  - Total documents
-  - Processed count
-  - Success/failure rate
-  - Average confidence score
-- User can download batch results as CSV/Excel
-- User can review low-confidence extractions
-- System handles failures gracefully
+**Implementation**: `process-documents.html` - Global Processing Hub
+
+**Features**:
+
+1. **Upload Section**
+   - Document type selector with real-time stats (accuracy, fields, model)
+   - Drag & drop upload zone
+   - Multi-file upload support (PDF, PNG, JPG, TIFF up to 10MB)
+   - File list preview with size info and individual remove buttons
+   - Processing options:
+     - Extract with source attribution (default: on)
+     - High confidence only (>90%)
+     - Auto-approve confident results
+     - Email notification on completion (default: on)
+
+2. **Live Processing Queue** (Global - All Document Types)
+   - Real-time view of documents being processed across **all document types**
+   - Shows actively processing documents with:
+     - Animated spinners
+     - Progress bars (0-100%)
+     - Document type badges (color-coded)
+     - Processing stage ("Running OCR", "Extracting fields", etc.)
+     - Time elapsed since start
+     - User who submitted (API User, username, etc.)
+   - Live counters: "X processing, Y queued"
+   - Collapsible queued items section
+   - WebSocket/polling for real-time updates
+
+3. **Recent Completions** (Global)
+   - Table showing last 20 processed documents across all types
+   - Columns: Document, Type, Status, Accuracy, Processing Time, Completed, Actions
+   - Status badges:
+     - Completed (green)
+     - Failed (red) with Retry button
+     - Review Required (yellow) for low confidence (<90%)
+   - Quick actions per document:
+     - View results (opens results.html with context)
+     - Export (JSON, CSV)
+     - Retry (for failed documents)
+   - Filter by status, date range, search by filename
+   - Pagination with "Load More"
+
+4. **Processing Options**
+   - Checkboxes for user preferences
+   - Batch save functionality
+   - Priority processing (premium feature)
 
 **Batch Processing Flow**:
 ```
-Upload → Queue → Process → Validate → Results
-         ↓
-      Priority Queue
-         ↓
-    Worker Pool (5-10 concurrent)
-         ↓
-      Results Database
-         ↓
-      Download Center
+User selects document type
+    ↓
+Upload multiple files (drag & drop or browse)
+    ↓
+Files appear in selected files list
+    ↓
+Click "Process Documents"
+    ↓
+Files queued in backend (Celery/Redis)
+    ↓
+Live Processing Queue shows real-time progress
+    ↓
+Completed documents move to Recent Completions
+    ↓
+Click "View" to see extraction results
 ```
 
 **Technical Requirements**:
 - Async job queue (Celery/Redis)
-- Worker pool management
-- Progress tracking
+- Worker pool management (5-10 concurrent workers)
+- WebSocket or Server-Sent Events (SSE) for live updates
+- Progress tracking per document
 - Batch result aggregation
-- Error handling and retry logic
+- Error handling and retry logic with exponential backoff
+- File upload validation (type, size, virus scan)
+- Queue prioritization (paid users, document type, submission time)
 
 #### 3.3.3 API Integration
 **User Story**: As a developer, I want to integrate document extraction into my existing systems via API.
@@ -752,40 +796,123 @@ class UserFeedback:
 
 ### 5.1 Navigation Structure
 
+#### 5.1.1 Document-Centric Architecture
+
+OCR Mate uses a **document-centric architecture** where each document type (Invoice, Receipt, Contract, etc.) is a self-contained unit with its own schema, ground truth examples, pipeline, and analytics. This ensures users never lose context about which document type they're working with.
+
+**Top-Level Navigation** (Global - visible on all pages):
 ```
-Dashboard
-├── Document Types
-│   ├── Create New
-│   ├── My Document Types
-│   │   └── [Document Type]
-│   │       ├── Schema Editor
-│   │       ├── Ground Truth Examples
-│   │       ├── Pipeline Optimization
-│   │       ├── Test & Validate
-│   │       └── Performance Analytics
-│   └── Templates (pre-built types)
-│
-├── Process Documents
-│   ├── Single Upload
-│   ├── Batch Upload
-│   └── Processing History
-│
-├── Results
-│   ├── Recent Extractions
-│   ├── Review Queue (low confidence)
-│   └── Export Center
-│
-├── API & Integration
-│   ├── API Keys
-│   ├── Documentation
-│   ├── Webhooks
-│   └── Code Export
-│
-└── Settings
-    ├── Account
-    ├── Billing
-    └── Team Management
+Dashboard | Document Types | Process | Settings
 ```
+
+**Hierarchical Structure**:
+```
+Dashboard (index.html)
+├── Overview metrics across all document types
+├── Recent activity feed
+└── Quick actions
+
+Document Types (document-types.html)
+├── Grid view of all document types
+├── Pre-built templates (Invoice, Receipt, Contract, Tax Forms, ID Card, Medical)
+└── Create new document type button
+    │
+    └── [Document Type Detail Page] (document-type-invoice.html)
+        ├── Tab 1: Schema (local to this document type)
+        │   ├── Define extraction fields
+        │   ├── Set field types and validation rules
+        │   └── Provide extraction hints
+        │
+        ├── Tab 2: Ground Truth Examples (local to this document type)
+        │   ├── Upload example documents
+        │   ├── Annotate fields → Opens annotation.html?document_type=invoice
+        │   └── View labeled examples
+        │
+        ├── Tab 3: Pipeline & Optimization (local to this document type)
+        │   ├── View current pipeline status
+        │   ├── Optimize pipeline button → Opens optimization.html with context
+        │   ├── Model selection and configuration
+        │   └── Version history
+        │
+        └── Tab 4: Performance Analytics (local to this document type)
+            ├── Accuracy metrics and trends
+            ├── Processing history table with live updates
+            ├── Field-level performance breakdown
+            └── View extraction results → Opens results.html with context
+
+Process Documents (process-documents.html) - Global Processing Hub
+├── Upload new documents with document type selection
+├── Live processing queue (shows ALL document types being processed)
+├── Recent completions across all document types
+└── Batch upload and processing options
+
+Settings (01-model-selector.html)
+├── Global model configuration
+├── Account settings
+├── API keys and integrations
+└── Team management
+```
+
+#### 5.1.2 Context-Aware Navigation
+
+**All document type-specific pages maintain context through:**
+
+1. **Breadcrumb Navigation**
+   ```
+   Dashboard / Document Types / Invoice / Ground Truth Examples / Annotate
+   ```
+
+2. **Document Type Badges**
+   - Page titles show which document type: `<title> <badge>Invoice</badge>`
+   - Always visible so users know their current context
+
+3. **Back Navigation**
+   - All sub-pages have "Back to [Document Type]" buttons
+   - Returns to correct tab on document type detail page
+   - Example: annotation.html → "Back to Invoice" → document-type-invoice.html?tab=examples
+
+4. **URL Parameters for State Management**
+   - `?document_type=invoice` - Tells pages which document type is being worked on
+   - `?tab=schema` - Opens specific tab on document type detail page
+   - Enables deep linking and proper browser back/forward behavior
+
+**Example Navigation Flow:**
+```
+User clicks "Document Types"
+  → Sees grid of all types
+  → Clicks "Invoice" card
+  → Opens document-type-invoice.html with 4 tabs
+  → Clicks "Ground Truth Examples" tab
+  → Clicks "Edit" on an example
+  → Opens annotation.html?document_type=invoice
+  → Breadcrumb shows: Dashboard / Document Types / Invoice / Ground Truth Examples
+  → "Back to Invoice" button returns to document-type-invoice.html?tab=examples
+```
+
+#### 5.1.3 Page Inventory
+
+**Core Pages:**
+- `index.html` - Dashboard (global overview)
+- `document-types.html` - All document types list (global)
+- `document-type-invoice.html` - Invoice detail with tabs (document-specific, template for all types)
+- `process-documents.html` - Global processing hub with upload and queue
+- `01-model-selector.html` - Global settings
+
+**Context-Aware Pages:**
+- `03-annotation.html?document_type=X` - Ground truth annotation
+- `04-optimization.html?document_type=X` - GEPA optimization progress
+- `05-results.html?document_type=X` - Extraction results with source attribution
+
+**Deprecated:**
+- `02-schema-editor.html` - Now redirects to document-types.html (schema editing integrated into document type tabs)
+
+#### 5.1.4 Future Multi-Document Type Support
+
+When adding more document types, the same structure scales:
+- Create `document-type-receipt.html`, `document-type-contract.html`, etc.
+- OR use single template with `document-type-detail.html?type=X`
+- Context-aware pages reused: `annotation.html?document_type=receipt`
+- Each document type is independent with its own schema, examples, pipeline
 
 ### 5.2 Key User Flows
 
@@ -1021,6 +1148,237 @@ Promote to Production
 - Exact text span shown in field details
 - Interactive: click field → see source, click source → see field
 - Builds user trust through transparency
+
+### 5.4 Prototype Implementation
+
+#### 5.4.1 Overview
+
+A fully functional **HTML/CSS/JavaScript prototype** has been built in the `prototype/` folder to validate UI/UX concepts before backend development. This prototype demonstrates the complete user journey and serves as the specification for frontend implementation.
+
+**Purpose**:
+- Validate document-centric architecture
+- Test navigation flows and context awareness
+- Demonstrate all key features visually
+- Get early user feedback on UI/UX
+- Serve as reference for React/Vue implementation
+
+**Technology**: Pure HTML5, CSS3 (CSS Variables design system), Vanilla JavaScript
+**Status**: Feature-complete for MVP scope
+
+#### 5.4.2 Implemented Pages
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `index.html` | Dashboard with overview metrics | ✅ Complete |
+| `document-types.html` | Grid view of all document types + templates | ✅ Complete |
+| `document-type-invoice.html` | Invoice detail page with 4 tabs (Schema, Ground Truth, Pipeline, Analytics) | ✅ Complete |
+| `03-annotation.html` | Ground truth annotation interface with context awareness | ✅ Complete |
+| `04-optimization.html` | GEPA optimization progress dashboard | ✅ Complete |
+| `05-results.html` | Extraction results with source attribution | ✅ Complete |
+| `process-documents.html` | Global processing hub with upload, queue, and history | ✅ Complete |
+| `01-model-selector.html` | Global model configuration settings | ✅ Complete |
+| `02-schema-editor.html` | Deprecated - redirects to document types | ✅ Complete |
+
+#### 5.4.3 Key Features Demonstrated
+
+**1. Document-Centric Architecture**
+- Each document type (Invoice, Receipt, Contract, etc.) is self-contained
+- Schema, Ground Truth, Pipeline, and Analytics are tabs within each document type
+- No standalone pages that lose context
+
+**2. Context-Aware Navigation**
+- Breadcrumbs on all pages: `Dashboard / Document Types / Invoice / Ground Truth`
+- Document type badges in page titles
+- "Back to [Document Type]" buttons that return to correct tab
+- URL parameters maintain state: `?document_type=invoice&tab=schema`
+
+**3. Live Processing Visualization**
+- Animated spinners for processing documents
+- Progress bars (0-100%)
+- Real-time counters: "3 processing, 5 queued"
+- Processing stage indicators: "Running OCR...", "Extracting fields..."
+- Color-coded status badges: Completed (green), Failed (red), Review Required (yellow)
+
+**4. Source Attribution** (LangStruct-inspired)
+- Split-view layout: source document on left, extracted data on right
+- Hover over field → highlight source in document (yellow background)
+- Click field → jump to source location
+- Shows exact text span and line number from source
+
+**5. Drag & Drop Upload**
+- Visual upload zone with drag-over state
+- Multi-file selection
+- File size display
+- Individual file removal
+- Document type selection with real-time stats
+
+**6. Processing History per Document Type**
+- Table of all processed documents for specific type
+- Filtering by status, date range, search
+- Live updates with WebSocket simulation
+- Export to CSV functionality
+
+**7. Design System**
+- CSS Variables for consistent theming
+- Reusable components (buttons, badges, cards, tables, forms)
+- Responsive grid layouts
+- Color-coded badges by status and document type
+- Accessibility considerations (ARIA labels, keyboard navigation)
+
+#### 5.4.4 Design System
+
+**CSS Variables** (`css/styles.css`):
+```css
+/* Colors */
+--primary-color: #2563eb      /* Blue for primary actions */
+--success-color: #059669      /* Green for completed/success */
+--warning-color: #d97706      /* Orange for warnings */
+--danger-color: #dc2626       /* Red for errors/failed */
+--text-primary: #111827       /* Dark gray for body text */
+--text-secondary: #6b7280     /* Medium gray for secondary text */
+--bg-primary: #ffffff         /* White background */
+--bg-secondary: #f9fafb       /* Light gray background */
+--border-color: #e5e7eb       /* Border color */
+
+/* Spacing scale (8px base) */
+--spacing-xs: 0.25rem         /* 4px */
+--spacing-sm: 0.5rem          /* 8px */
+--spacing-md: 1rem            /* 16px */
+--spacing-lg: 1.5rem          /* 24px */
+--spacing-xl: 2rem            /* 32px */
+
+/* Typography */
+--font-size-xs: 0.75rem       /* 12px */
+--font-size-sm: 0.875rem      /* 14px */
+--font-size-base: 1rem        /* 16px */
+--font-size-lg: 1.125rem      /* 18px */
+--font-size-xl: 1.25rem       /* 20px */
+
+/* Border radius */
+--radius-sm: 0.25rem          /* 4px */
+--radius-md: 0.5rem           /* 8px */
+--radius-lg: 0.75rem          /* 12px */
+```
+
+**Component Library**:
+- `.btn` - Primary, secondary, success, danger, warning button styles
+- `.badge` - Status badges with color variants
+- `.card` - Container with header, body, and optional footer
+- `.table` - Styled data tables with hover effects
+- `.form-input`, `.form-select`, `.form-textarea` - Consistent form controls
+- `.spinner` - Animated loading spinner
+- `.tab`, `.tab-content` - Tab navigation system
+
+#### 5.4.5 Interactive Features (JavaScript)
+
+**Document Type Detail Page** (`document-type-invoice.html`):
+```javascript
+// Tab switching with URL state management
+function showTab(tabName) {
+  // Hide all tab contents
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.style.display = 'none';
+  });
+
+  // Show selected tab
+  document.getElementById('content-' + tabName).style.display = 'block';
+
+  // Update URL parameter
+  const url = new URL(window.location);
+  url.searchParams.set('tab', tabName);
+  window.history.pushState({}, '', url);
+
+  // Update active tab styling
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  document.getElementById('tab-' + tabName).classList.add('active');
+}
+
+// Load tab from URL on page load
+window.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const tab = urlParams.get('tab') || 'schema';
+  showTab(tab);
+});
+```
+
+**Process Documents Page** (`process-documents.html`):
+```javascript
+// Drag and drop file upload
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  const files = Array.from(e.dataTransfer.files);
+  addFiles(files);
+});
+
+// Dynamic file list management
+function addFiles(files) {
+  selectedFiles = [...selectedFiles, ...files];
+  updateFileList();
+  checkProcessButton();
+}
+
+// Enable process button only when document type + files selected
+function checkProcessButton() {
+  const docType = document.getElementById('document-type-select').value;
+  const processBtn = document.getElementById('process-btn');
+  processBtn.disabled = !(docType && selectedFiles.length > 0);
+}
+```
+
+**Annotation Page** (`03-annotation.html`):
+```javascript
+// Context awareness via URL parameters
+const urlParams = new URLSearchParams(window.location.search);
+const documentType = urlParams.get('document_type') || 'unknown';
+
+// Update breadcrumbs dynamically
+window.addEventListener('DOMContentLoaded', () => {
+  if (documentType !== 'unknown') {
+    const typeName = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+    document.getElementById('breadcrumb-context').textContent = `Annotate ${typeName} Example`;
+  }
+});
+
+// Return to correct document type tab
+function returnToDocType() {
+  if (documentType === 'invoice') {
+    window.location.href = 'document-type-invoice.html?tab=examples';
+  }
+  // Handle other document types...
+}
+```
+
+#### 5.4.6 Next Steps: From Prototype to Production
+
+**Frontend Migration**:
+1. Port HTML/CSS to React/Vue components
+2. Replace vanilla JavaScript with state management (Redux/Pinia)
+3. Integrate with REST API endpoints
+4. Add WebSocket for real-time updates
+5. Implement authentication (Auth0)
+6. Add error boundaries and loading states
+
+**Backend Integration Points**:
+- `GET /api/v1/document-types` - Load document types list
+- `POST /api/v1/document-types` - Create new document type
+- `PUT /api/v1/document-types/:id/schema` - Update schema
+- `POST /api/v1/ground-truth` - Upload and label examples
+- `POST /api/v1/pipelines/:id/optimize` - Trigger GEPA optimization
+- `WS /api/v1/pipeline/:id/optimization-status` - WebSocket for live updates
+- `POST /api/v1/extract` - Process single document
+- `POST /api/v1/extract/batch` - Batch processing
+- `WS /api/v1/processing-queue` - WebSocket for live queue updates
+- `GET /api/v1/results/:id` - Get extraction results
+
+**Prototype Serves As**:
+- Visual specification for frontend developers
+- UX reference for user flows
+- Design system documentation
+- Test cases for E2E testing (Playwright/Cypress)
+- Demo for user testing and feedback
 
 ---
 
