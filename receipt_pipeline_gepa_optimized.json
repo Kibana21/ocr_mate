@@ -1,0 +1,37 @@
+{
+  "traces": [],
+  "train": [],
+  "demos": [],
+  "signature": {
+    "instructions": "Extract the after-tax total and the before-tax total from the receipt.",
+    "fields": [
+      {
+        "prefix": "Receipt Image:",
+        "description": "Receipt image to extract totals from"
+      },
+      {
+        "prefix": "Receipt Totals:",
+        "description": "Before-tax and after-tax totals"
+      }
+    ]
+  },
+  "lm": {
+    "model": "gemini/gemini-2.0-flash-exp",
+    "model_type": "chat",
+    "cache": true,
+    "num_retries": 3,
+    "finetuning_model": null,
+    "launch_kwargs": {},
+    "train_kwargs": {},
+    "temperature": 0.0,
+    "max_tokens": 4000,
+    "api_key": "AIzaSyD0j5uBKxXdwzPPdp8Nrh2t8A24A3m34OQ"
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "3.0.3",
+      "cloudpickle": "3.1"
+    }
+  }
+}

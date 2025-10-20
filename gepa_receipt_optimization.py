@@ -14,11 +14,10 @@ Usage:
     python gepa_receipt_optimization.py
 
 Requirements:
-    pip install dspy-ai litellm pillow pixeltable pydantic
+    pip install dspy-ai litellm pillow pixeltable pydantic python-dotenv
 
 Environment:
-    export GROQ_API_KEY="your-groq-key"
-    export OPENAI_API_KEY="your-openai-key"
+    export GEMINI_API_KEY="your-gemini-key"
 """
 
 import os
@@ -26,6 +25,7 @@ import io
 import base64
 from typing import Optional, Dict
 from PIL import Image
+from dotenv import load_dotenv
 
 import dspy
 import pixeltable as pxt
@@ -33,16 +33,15 @@ from pixeltable import func
 from pydantic import BaseModel, field_validator
 import litellm
 
+# Load environment variables from .env file
+load_dotenv()
+
 
 # ============================================================================
 # PART 1: Data Model (from cells 6-7 of prompt_optimization.ipynb)
 # ============================================================================
 
 class ReceiptTotals(BaseModel):
-    """
-    Pydantic model for receipt totals extraction.
-    Same as in prompt_optimization.ipynb cell 6.
-    """
     before_tax_total: Optional[float] = None
     after_tax_total: Optional[float] = None
 
@@ -81,7 +80,7 @@ def metric(ground_truth: ReceiptTotals, pred: ReceiptTotals) -> float:
     return float(is_btax_same and is_atax_same)
 
 
-def metric_with_feedback(gold, pred, trace, pred_name, pred_trace):
+def metric_with_feedback(gold, pred, trace=None, pred_name=None, pred_trace=None):
     """
     GEPA-compatible metric with 5 parameters and textual feedback.
 
@@ -91,11 +90,12 @@ def metric_with_feedback(gold, pred, trace, pred_name, pred_trace):
         gold: Ground truth dspy.Example with receipt_totals
         pred: Prediction with receipt_totals
         trace: Legacy parameter (may be None)
-        pred_name: Name of predictor
-        pred_trace: Detailed trace with reasoning
+        pred_name: Name of predictor (optional) - when provided, returns feedback for that predictor
+        pred_trace: Detailed trace with reasoning (optional)
 
     Returns:
-        dspy.Prediction(score=float, feedback=str)
+        - If pred_name is None: returns float score
+        - If pred_name is specified: returns dspy.Prediction(score=float, feedback=str)
     """
     # Extract ReceiptTotals from gold and pred
     gold_totals = gold.receipt_totals if hasattr(gold, 'receipt_totals') else gold
@@ -108,7 +108,11 @@ def metric_with_feedback(gold, pred, trace, pred_name, pred_trace):
     # Calculate score
     score = float(is_btax_same and is_atax_same)
 
-    # Generate feedback
+    # If no specific predictor feedback requested, return just the score
+    if pred_name is None:
+        return score
+
+    # Generate detailed feedback for the predictor
     feedback_parts = []
 
     if not is_btax_same:
@@ -128,17 +132,73 @@ def metric_with_feedback(gold, pred, trace, pred_name, pred_trace):
         )
 
     if score == 1.0:
-        feedback = "Both totals extracted correctly!"
+        feedback = "Both totals extracted correctly! Great job identifying the subtotal and final total."
     else:
         feedback = " ".join(feedback_parts)
-        feedback += " Tax is typically 8-10% of subtotal."
+        feedback += " Tip: Tax is typically 8-10% of subtotal. Use this to validate your extraction."
 
     return dspy.Prediction(score=score, feedback=feedback)
 
 
 # ============================================================================
-# PART 3: Helper Function for Baseline Extraction (Pixeltable UDF)
+# PART 3: Helper Functions
 # ============================================================================
+
+def resize_image_for_llm(img: Image.Image, max_width: int = 1024, max_height: int = 1024) -> Image.Image:
+    """
+    Resize image to fit within max dimensions while maintaining aspect ratio.
+    This reduces context length for LLM processing.
+
+    Args:
+        img: PIL Image
+        max_width: Maximum width in pixels
+        max_height: Maximum height in pixels
+
+    Returns:
+        Resized PIL Image
+    """
+    # Get current dimensions
+    width, height = img.size
+
+    # Calculate scaling factor
+    scale = min(max_width / width, max_height / height, 1.0)
+
+    # Only resize if image is larger than max dimensions
+    if scale < 1.0:
+        new_width = int(width * scale)
+        new_height = int(height * scale)
+        img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+    return img
+
+
+def load_and_resize_image(path: str, max_width: int = 512, max_height: int = 512):
+    """
+    Load image from file and resize it for LLM processing.
+    Returns a dspy.Image object.
+
+    Args:
+        path: Path to image file
+        max_width: Maximum width in pixels (default 512 for Groq)
+        max_height: Maximum height in pixels (default 512 for Groq)
+
+    Returns:
+        dspy.Image object with resized image
+    """
+    # Load as PIL Image first
+    pil_img = Image.open(path)
+
+    # Resize aggressively for Groq's smaller context window
+    pil_img = resize_image_for_llm(pil_img, max_width, max_height)
+
+    # Convert to base64 with lower quality
+    buf = io.BytesIO()
+    pil_img.convert("RGB").save(buf, format="JPEG", quality=60)
+    b64 = base64.b64encode(buf.getvalue()).decode()
+
+    # Create dspy.Image from base64
+    return dspy.Image(url=f"data:image/jpeg;base64,{b64}")
+
 
 def extract_totals_baseline(img: Image.Image) -> Dict[str, float]:
     """
@@ -159,9 +219,12 @@ def extract_totals_baseline(img: Image.Image) -> Dict[str, float]:
         "<after_tax_total>VALUE</after_tax_total>"
     )
 
-    # Convert image to base64
+    # Resize image to reduce context length (512x512 for Groq)
+    img = resize_image_for_llm(img, max_width=512, max_height=512)
+
+    # Convert image to base64 with lower quality
     buf = io.BytesIO()
-    img.convert("RGB").save(buf, format="JPEG", quality=95)
+    img.convert("RGB").save(buf, format="JPEG", quality=60)
     b64 = base64.b64encode(buf.getvalue()).decode()
 
     # Prepare messages
@@ -173,11 +236,12 @@ def extract_totals_baseline(img: Image.Image) -> Dict[str, float]:
         ]
     }]
 
-    # Call LLM
+    # Call LLM (using Gemini 2.0 directly for better OCR support)
     response = litellm.completion(
-        model="groq/llama-4-scout-17b-16e-instruct",
+        model="gemini/gemini-2.0-flash",
         messages=messages,
-        temperature=0
+        temperature=0,
+        api_key=os.environ.get("GEMINI_API_KEY")
     )
 
     response_text = response.choices[0]["message"]["content"]
@@ -263,8 +327,7 @@ def add_ground_truth_and_metric(table, ground_truth_data):
 
 class ReceiptExtraction(dspy.Signature):
     """
-    DSPy signature for receipt totals extraction.
-    Similar to cell 43 from prompt_optimization.ipynb.
+    Extract the after-tax total and the before-tax total from the receipt.
     """
     receipt_image: dspy.Image = dspy.InputField(
         desc="Receipt image to extract totals from"
@@ -274,10 +337,13 @@ class ReceiptExtraction(dspy.Signature):
     )
 
 
-def create_training_data():
+def create_training_data(test_mode=False):
     """
     Create DSPy training dataset.
     Based on cell 54 from prompt_optimization.ipynb.
+
+    Args:
+        test_mode: If True, use only 4 receipts for quick testing
     """
     # Ground truth data (from cell 54)
     goldset = [
@@ -295,13 +361,19 @@ def create_training_data():
         {'receipt_path': 'images/receipts/IMG_2168.jpg', 'ground_truth': {'before_tax_total': 2011.00, 'after_tax_total': 2522.00}},
     ]
 
+    # Use only first 4 receipts in test mode
+    if test_mode:
+        goldset = goldset[:4]
+        print(f"  ⚠ TEST MODE: Using only {len(goldset)} receipts for quick testing")
+
     # Convert to DSPy Examples (from cell 54)
     evalset = []
     for item in goldset:
         try:
-            img = dspy.Image.from_file(item["receipt_path"])
-        except:
-            print(f"Warning: Could not load {item['receipt_path']}, skipping...")
+            # Load and resize image to reduce context length (512x512 for Groq)
+            img = load_and_resize_image(item["receipt_path"], max_width=512, max_height=512)
+        except Exception as e:
+            print(f"Warning: Could not load {item['receipt_path']}: {e}, skipping...")
             continue
 
         example = dspy.Example(
@@ -317,12 +389,16 @@ def create_training_data():
     return evalset, goldset
 
 
-def run_gepa_optimization():
+def run_gepa_optimization(test_mode=False, delay_seconds=3):
     """
     Run GEPA optimization on receipt extraction.
 
+    Args:
+        test_mode: If True, use only 4 receipts for quick testing
+        delay_seconds: Delay between API calls to avoid rate limits (default: 3)
+
     This function:
-    1. Sets up student (Llama) and reflection (GPT-4o) LLMs
+    1. Sets up student and reflection LLMs
     2. Loads training data from receipt images
     3. Creates baseline DSPy program
     4. Runs GEPA optimization to improve prompts
@@ -336,25 +412,39 @@ def run_gepa_optimization():
     print("=" * 80)
     print()
 
+    # Configure rate limiting
+    import time
+    original_completion = litellm.completion
+    def rate_limited_completion(*args, **kwargs):
+        time.sleep(delay_seconds)
+        return original_completion(*args, **kwargs)
+    litellm.completion = rate_limited_completion
+
     # Step 1: Set up LLMs (from cell 42)
     print("[1/7] Setting up language models...")
+    if test_mode:
+        print(f"  ⚠ TEST MODE: Using only 4 receipts")
+    print(f"  Rate limiting: {delay_seconds}s delay between API calls")
+    # Using Gemini 2.0 Flash directly - excellent vision + 1M context
     student_lm = dspy.LM(
-        model="groq/llama-4-scout-17b-16e-instruct",
-        api_key=os.environ.get("GROQ_API_KEY")
+        model="gemini/gemini-2.0-flash-exp",
+        api_key=os.environ.get("GEMINI_API_KEY")
     )
 
-    # For GEPA optimization
+    # For GEPA optimization - using same model for reflection
     reflection_lm = dspy.LM(
-        model="openai/gpt-4o",
-        api_key=os.environ.get("OPENAI_API_KEY")
+        model="gemini/gemini-2.0-flash-exp",
+        api_key=os.environ.get("GEMINI_API_KEY")
     )
-    print("  ✓ Student model: Llama 4 Scout (fast, cheap)")
-    print("  ✓ Reflection model: GPT-4o (smart, for optimization)")
+    print("  ✓ Student model: Gemini 2.0 Flash")
+    print("  ✓ Reflection model: Gemini 2.0 Flash")
+    print("  ✓ Context window: 1M tokens (no size issues!)")
 
     # Step 2: Create training data (from cell 54)
     print("\n[2/7] Loading training data...")
-    evalset, goldset = create_training_data()
-    print(f"  ✓ Loaded {len(evalset)} receipt examples")
+    print("  Loading and optimizing receipt images...")
+    evalset, goldset = create_training_data(test_mode=test_mode)
+    print(f"  ✓ Loaded {len(evalset)} receipt examples (512x512, 60% quality)")
 
     # Split into train and validation
     split_idx = int(len(evalset) * 0.8)
@@ -419,24 +509,19 @@ def run_gepa_optimization():
     # Step 6: Create GEPA optimizer (adapted from cell 58)
     print("\n[6/7] Setting up GEPA optimizer...")
 
-    # Optional: Create teacher program for better optimization
-    teacherp = dprogram.deepcopy()
-    teacherp.set_lm(dspy.LM("openai/gpt-4o"))
-
     optimizer = dspy.GEPA(
         metric=metric_with_feedback,      # Our 5-parameter metric
         auto="light",                     # light/medium/heavy
-        num_threads=4,                    # Parallel evaluation
-        reflection_minibatch_size=3,      # Examples per reflection
-        reflection_lm=reflection_lm,      # GPT-4o for optimization
-        track_stats=True,                 # Log progress
-        max_bootstrapped_demos=0,         # No synthetic examples
-        max_labeled_demos=0               # No few-shot examples
+        num_threads=1,                    # Sequential to avoid rate limits
+        reflection_minibatch_size=2,      # Smaller batches
+        reflection_lm=reflection_lm,      # Gemini for optimization
+        track_stats=True                  # Log progress
     )
     print("  ✓ GEPA optimizer configured")
-    print("    - Auto level: light (5-10 min)")
-    print("    - Minibatch size: 3")
-    print("    - Using teacher model (GPT-4o)")
+    print("    - Auto level: light (slower but avoids rate limits)")
+    print("    - Threads: 1 (sequential processing)")
+    print("    - Minibatch size: 2")
+    print("    - Reflection LM: Gemini 2.0 Flash")
 
     # Step 7: Run optimization (from cell 58)
     print("\n[7/7] Running GEPA optimization...")
@@ -444,7 +529,7 @@ def run_gepa_optimization():
     print("  GEPA process:")
     print("    1. Run baseline on training examples")
     print("    2. Identify failures and collect feedback")
-    print("    3. GPT-4o analyzes failures in natural language")
+    print("    3. Llama analyzes failures in natural language")
     print("    4. Propose improved prompts")
     print("    5. Test candidates and maintain Pareto frontier")
     print("    6. Combine complementary lessons")
@@ -454,9 +539,7 @@ def run_gepa_optimization():
         dprogram_optimized = optimizer.compile(
             student=dprogram,
             trainset=trainset,
-            valset=valset if valset else None,
-            requires_permission_to_run=False,
-            teacher=teacherp
+            valset=valset if valset else None
         )
 
         print("\n✓ GEPA optimization complete!")
@@ -533,20 +616,20 @@ if __name__ == "__main__":
     print("Automated prompt optimization using DSPy GEPA\n")
 
     # Check API keys
-    if "GROQ_API_KEY" not in os.environ:
-        print("⚠ Warning: GROQ_API_KEY not set")
-        print("  Set with: export GROQ_API_KEY='your-key'")
+    if "GEMINI_API_KEY" not in os.environ:
+        print("⚠ Error: GEMINI_API_KEY not set (required)")
+        print("  Set with: export GEMINI_API_KEY='your-key'")
+        exit(1)
 
-    if "OPENAI_API_KEY" not in os.environ:
-        print("⚠ Warning: OPENAI_API_KEY not set (required for GEPA)")
-        print("  Set with: export OPENAI_API_KEY='your-key'")
-        print()
-        response = input("Continue anyway? (y/n): ")
-        if response.lower() != 'y':
-            exit(1)
+    # Test mode configuration
+    TEST_MODE = False  # Set to False for full 12-receipt optimization
+    DELAY_SECONDS = 10  # Increased delay for all 12 receipts to avoid rate limits
 
     try:
-        dprogram_optimized, table = run_gepa_optimization()
+        dprogram_optimized, table = run_gepa_optimization(
+            test_mode=TEST_MODE,
+            delay_seconds=DELAY_SECONDS
+        )
 
         print("\n" + "=" * 80)
         print("✓ SUCCESS!")
