@@ -96,7 +96,8 @@ def create_pydantic_model_from_schema(schema: ExtractionSchema) -> Type[BaseMode
 
 def create_dspy_signature_from_schema(
     schema: ExtractionSchema,
-    extraction_model: Type[BaseModel]
+    extraction_model: Type[BaseModel],
+    use_ocr_grounding: bool = False
 ) -> Type[dspy.Signature]:
     """
     Create a DSPy Signature from an ExtractionSchema.
@@ -104,29 +105,55 @@ def create_dspy_signature_from_schema(
     Args:
         schema: ExtractionSchema defining fields
         extraction_model: Pydantic model for output structure
+        use_ocr_grounding: If True, include OCR text input field for grounding
 
     Returns:
         DSPy Signature class
     """
-    # Generate instruction from schema
-    instruction = f"""Extract structured data from the document image.
+    if use_ocr_grounding:
+        # Dual input mode: Image + OCR text
+        instruction = f"""Extract structured data from the document using BOTH the image and OCR text.
+
+The OCR text provides the textual content for reference. Use the image for visual context and verification.
+
+{schema.to_prompt_description()}
+
+Return values in a structured format. Cross-reference between OCR text and image for accuracy."""
+
+        class DynamicExtractionWithOCR(dspy.Signature):
+            __doc__ = instruction
+
+            document_image: dspy.Image = dspy.InputField(
+                desc="Document image for visual context"
+            )
+            ocr_text: str = dspy.InputField(
+                desc="OCR-extracted text from the document for textual reference"
+            )
+            extracted_data: extraction_model = dspy.OutputField(
+                desc="Extracted structured data"
+            )
+
+        return DynamicExtractionWithOCR
+
+    else:
+        # Vision-only mode (original)
+        instruction = f"""Extract structured data from the document image.
 
 {schema.to_prompt_description()}
 
 Return values in a structured format. Be precise and extract exact values from the document."""
 
-    # Create signature class dynamically
-    class DynamicExtraction(dspy.Signature):
-        __doc__ = instruction
+        class DynamicExtraction(dspy.Signature):
+            __doc__ = instruction
 
-        document_image: dspy.Image = dspy.InputField(
-            desc="Document image to extract data from"
-        )
-        extracted_data: extraction_model = dspy.OutputField(
-            desc="Extracted structured data"
-        )
+            document_image: dspy.Image = dspy.InputField(
+                desc="Document image to extract data from"
+            )
+            extracted_data: extraction_model = dspy.OutputField(
+                desc="Extracted structured data"
+            )
 
-    return DynamicExtraction
+        return DynamicExtraction
 
 
 class SchemaAdapter:
@@ -134,13 +161,27 @@ class SchemaAdapter:
     Adapter that converts ExtractionSchema to DSPy components.
 
     Usage:
+        # Vision-only mode (original)
         adapter = SchemaAdapter(schema)
+        signature = adapter.get_dspy_signature()
+        program = dspy.Predict(signature)
+
+        # OCR-grounded mode (enhanced)
+        adapter = SchemaAdapter(schema, use_ocr_grounding=True)
         signature = adapter.get_dspy_signature()
         program = dspy.Predict(signature)
     """
 
-    def __init__(self, schema: ExtractionSchema):
+    def __init__(self, schema: ExtractionSchema, use_ocr_grounding: bool = False):
+        """
+        Initialize SchemaAdapter
+
+        Args:
+            schema: ExtractionSchema defining fields
+            use_ocr_grounding: If True, signatures will include OCR text input
+        """
         self.schema = schema
+        self.use_ocr_grounding = use_ocr_grounding
         self._extraction_model = None
         self._dspy_signature = None
 
@@ -156,7 +197,8 @@ class SchemaAdapter:
             extraction_model = self.get_extraction_model()
             self._dspy_signature = create_dspy_signature_from_schema(
                 self.schema,
-                extraction_model
+                extraction_model,
+                use_ocr_grounding=self.use_ocr_grounding
             )
         return self._dspy_signature
 

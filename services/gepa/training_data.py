@@ -5,7 +5,7 @@ Converts ground truth examples to DSPy format for GEPA optimization.
 """
 
 import dspy
-from typing import List, Type
+from typing import List, Type, Optional
 from pydantic import BaseModel
 from services.models.schema import GroundTruthExample, ExtractionSchema
 from services.gepa.image_processor import load_and_resize_image
@@ -16,7 +16,16 @@ class TrainingDataConverter:
     Converts ground truth examples to DSPy training format.
 
     Usage:
+        # Vision-only mode
         converter = TrainingDataConverter(schema, extraction_model)
+        dspy_examples = converter.convert(ground_truth_examples)
+
+        # OCR-grounded mode
+        converter = TrainingDataConverter(
+            schema, extraction_model,
+            ocr_service=ocr_service,
+            use_ocr_grounding=True
+        )
         dspy_examples = converter.convert(ground_truth_examples)
     """
 
@@ -26,7 +35,9 @@ class TrainingDataConverter:
         extraction_model: Type[BaseModel],
         max_width: int = 512,
         max_height: int = 512,
-        jpeg_quality: int = 60
+        jpeg_quality: int = 60,
+        ocr_service=None,  # AzureDocumentIntelligenceService
+        use_ocr_grounding: bool = False
     ):
         """
         Initialize converter.
@@ -37,12 +48,16 @@ class TrainingDataConverter:
             max_width: Max image width for processing
             max_height: Max image height for processing
             jpeg_quality: JPEG compression quality
+            ocr_service: Optional OCR service for text extraction
+            use_ocr_grounding: If True, include OCR text in training examples
         """
         self.schema = schema
         self.extraction_model = extraction_model
         self.max_width = max_width
         self.max_height = max_height
         self.jpeg_quality = jpeg_quality
+        self.ocr_service = ocr_service
+        self.use_ocr_grounding = use_ocr_grounding
 
     def convert_single(self, example: GroundTruthExample) -> dspy.Example:
         """
@@ -71,10 +86,34 @@ class TrainingDataConverter:
         extracted_data = self.extraction_model(**example.labeled_values)
 
         # Create DSPy example
-        dspy_example = dspy.Example(
-            document_image=img,
-            extracted_data=extracted_data
-        ).with_inputs("document_image")
+        if self.use_ocr_grounding and self.ocr_service:
+            # OCR-grounded mode: Include OCR text (RECOMMENDED: Use native markdown)
+            try:
+                # Try Azure's native markdown output first (BEST for structure preservation)
+                if hasattr(self.ocr_service, 'extract_markdown'):
+                    ocr_text = self.ocr_service.extract_markdown(example.document_path)
+                else:
+                    # Fallback to custom formatter if native markdown not available
+                    from services.ocr.markdown_formatter import OCRMarkdownFormatter
+                    ocr_result = self.ocr_service.extract_text(example.document_path)
+                    formatter = OCRMarkdownFormatter()
+                    ocr_text = formatter.format_compact(ocr_result)
+            except Exception as e:
+                # Fallback to vision-only if OCR fails
+                print(f"Warning: OCR failed for {example.document_path}: {e}")
+                ocr_text = ""
+
+            dspy_example = dspy.Example(
+                document_image=img,
+                ocr_text=ocr_text,
+                extracted_data=extracted_data
+            ).with_inputs("document_image", "ocr_text")
+        else:
+            # Vision-only mode (original)
+            dspy_example = dspy.Example(
+                document_image=img,
+                extracted_data=extracted_data
+            ).with_inputs("document_image")
 
         return dspy_example
 

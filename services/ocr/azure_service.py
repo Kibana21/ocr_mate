@@ -289,6 +289,112 @@ class AzureDocumentIntelligenceService:
 
         return key_value_pairs
 
+    def extract_markdown(
+        self,
+        document_path: str,
+        model_id: str = "prebuilt-layout"
+    ) -> str:
+        """
+        Extract document as markdown using Azure's native markdown output
+
+        This is RECOMMENDED for LLM grounding as it:
+        - Preserves document structure (headings, tables, lists)
+        - Maintains reading order
+        - Formats tables as markdown tables
+        - Handles multi-column layouts
+        - Native Azure output (no custom formatting needed)
+
+        Args:
+            document_path: Path to document file
+            model_id: Azure model to use (default: prebuilt-layout)
+
+        Returns:
+            Formatted markdown string ready for LLM consumption
+
+        Example:
+            >>> service = AzureDocumentIntelligenceService.from_env()
+            >>> markdown = service.extract_markdown("invoice.pdf")
+            >>> # Use markdown as LLM grounding
+            >>> result = llm_pipeline(document_image=image, ocr_text=markdown)
+        """
+        try:
+            from azure.ai.documentintelligence.models import ContentFormat, AnalyzeDocumentRequest
+        except ImportError:
+            raise ImportError(
+                "Azure Document Intelligence SDK version >= 1.0.0b1 required for markdown output. "
+                "Upgrade with: pip install --upgrade azure-ai-documentintelligence"
+            )
+
+        document_path = Path(document_path)
+
+        if not document_path.exists():
+            raise FileNotFoundError(f"Document not found: {document_path}")
+
+        # Read document
+        with open(document_path, "rb") as f:
+            document_content = f.read()
+
+        # Analyze with markdown output format
+        poller = self.client.begin_analyze_document(
+            model_id=model_id,
+            analyze_request=document_content,
+            output_content_format=ContentFormat.MARKDOWN,  # KEY: Native markdown output
+            content_type="application/octet-stream"
+        )
+
+        # Wait for result
+        result = poller.result()
+
+        # Extract markdown content
+        if hasattr(result, 'content'):
+            return result.content
+        else:
+            # Fallback to combining page text
+            return "\n\n".join(
+                page.content if hasattr(page, 'content') else ""
+                for page in result.pages
+            )
+
+    def extract_markdown_from_url(
+        self,
+        url: str,
+        model_id: str = "prebuilt-layout"
+    ) -> str:
+        """
+        Extract document from URL as markdown
+
+        Args:
+            url: Public URL to document
+            model_id: Azure model to use
+
+        Returns:
+            Formatted markdown string
+        """
+        try:
+            from azure.ai.documentintelligence.models import ContentFormat, AnalyzeDocumentRequest
+        except ImportError:
+            raise ImportError(
+                "Azure Document Intelligence SDK version >= 1.0.0b1 required. "
+                "Upgrade with: pip install --upgrade azure-ai-documentintelligence"
+            )
+
+        # Analyze from URL
+        poller = self.client.begin_analyze_document(
+            model_id=model_id,
+            analyze_request=AnalyzeDocumentRequest(url_source=url),
+            output_content_format=ContentFormat.MARKDOWN
+        )
+
+        result = poller.result()
+
+        if hasattr(result, 'content'):
+            return result.content
+        else:
+            return "\n\n".join(
+                page.content if hasattr(page, 'content') else ""
+                for page in result.pages
+            )
+
     @classmethod
     def from_env(cls) -> "AzureDocumentIntelligenceService":
         """
