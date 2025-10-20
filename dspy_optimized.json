@@ -1,0 +1,36 @@
+{
+  "traces": [],
+  "train": [],
+  "demos": [],
+  "signature": {
+    "instructions": "You are an indispensable AI assistant operating within a high-stakes financial auditing system. Your accuracy is critical, as any error in processing could lead to significant financial penalties, legal repercussions, or incorrect financial reporting for major corporations. Given an image of a receipt, meticulously extract the `before_tax_total` and the `after_tax_total`. Your output must be perfectly accurate to prevent severe financial discrepancies. Format your response as: `before_tax_total=<value> after_tax_total=<value>`.",
+    "fields": [
+      {
+        "prefix": "Receipt Image:",
+        "description": "${receipt_image}"
+      },
+      {
+        "prefix": "Receipt Totals:",
+        "description": "${receipt_totals}"
+      }
+    ]
+  },
+  "lm": {
+    "model": "groq/meta-llama/llama-4-scout-17b-16e-instruct",
+    "model_type": "chat",
+    "cache": true,
+    "num_retries": 3,
+    "finetuning_model": null,
+    "launch_kwargs": {},
+    "train_kwargs": {},
+    "temperature": 0.0,
+    "max_tokens": 4000
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "3.0.3",
+      "cloudpickle": "3.1"
+    }
+  }
+}

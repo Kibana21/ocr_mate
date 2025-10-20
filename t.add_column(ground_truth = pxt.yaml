@@ -1,0 +1,16 @@
+t.add_column(ground_truth = pxt.Json)
+updates = [
+    {'receipt_path': 'images/receipts/IMG_2171.jpg', 'ground_truth': {'before_tax_total': 25.0, 'after_tax_total': 25.30}},
+    {'receipt_path': 'images/receipts/IMG_2170.jpg', 'ground_truth': {'before_tax_total': 246.62, 'after_tax_total': 258.96}},
+    {'receipt_path': 'images/receipts/IMG_2172.jpg', 'ground_truth': {'before_tax_total': 80.0, 'after_tax_total': 88.8}},
+    {'receipt_path': 'images/receipts/IMG_2166.jpg', 'ground_truth': {'before_tax_total': 559.93, 'after_tax_total': 561.64}},
+    {'receipt_path': 'images/receipts/IMG_2167.jpg', 'ground_truth': {'before_tax_total': 195.0, 'after_tax_total': 232.92}},
+    {'receipt_path': 'images/receipts/IMG_2173.jpg', 'ground_truth': {'before_tax_total': 2805, 'after_tax_total': 3394.06}},
+    {'receipt_path': 'images/receipts/IMG_2163.jpg', 'ground_truth': {'before_tax_total': 1660.0, 'after_tax_total': 2134.0}},
+    {'receipt_path': 'images/receipts/IMG_2160.jpg', 'ground_truth': {'before_tax_total': 2011.0, 'after_tax_total': 2521.61}},
+    {'receipt_path': 'images/receipts/IMG_2174.jpg', 'ground_truth': {'before_tax_total': 9520.00, 'after_tax_total': 10576.00}},
+    {'receipt_path': 'images/receipts/IMG_2175.jpg', 'ground_truth': {'before_tax_total': 1315.00, 'after_tax_total': 1381.00}},
+    {'receipt_path': 'images/receipts/IMG_2169.jpg', 'ground_truth': {'before_tax_total': 1265.00, 'after_tax_total': 1530.65}},
+    {'receipt_path': 'images/receipts/IMG_2168.jpg', 'ground_truth': {'before_tax_total': 2011.00, 'after_tax_total': 2522.00}},
+]
+t.batch_update(updates)
