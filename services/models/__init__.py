@@ -20,6 +20,19 @@ from .optimization_result import (
     OptimizationMetrics,
     OptimizationResult
 )
+from .annotation import (
+    AnnotationSource,
+    FieldAnnotation,
+    DocumentAnnotation,
+    OCRAssistedAnnotationService
+)
+from .verification import (
+    VerificationStatus,
+    FieldVerification,
+    DocumentVerification,
+    ConflictResolutionStrategy,
+    DualExtractionVerifier
+)
 
 __all__ = [
     # Schema models
@@ -37,4 +50,15 @@ __all__ = [
     'FieldMetrics',
     'OptimizationMetrics',
     'OptimizationResult',
+    # Annotation models
+    'AnnotationSource',
+    'FieldAnnotation',
+    'DocumentAnnotation',
+    'OCRAssistedAnnotationService',
+    # Verification models
+    'VerificationStatus',
+    'FieldVerification',
+    'DocumentVerification',
+    'ConflictResolutionStrategy',
+    'DualExtractionVerifier',
 ]
