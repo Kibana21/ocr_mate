@@ -13,6 +13,7 @@ from .optimization_config import (
     LLMConfig,
     ImageProcessingConfig,
     GEPAConfig,
+    OCRGroundingConfig,
     OptimizationConfig
 )
 from .optimization_result import (
@@ -45,6 +46,7 @@ __all__ = [
     'LLMConfig',
     'ImageProcessingConfig',
     'GEPAConfig',
+    'OCRGroundingConfig',
     'OptimizationConfig',
     # Result models
     'FieldMetrics',

@@ -45,6 +45,26 @@ class GEPAConfig(BaseModel):
     )
 
 
+class OCRGroundingConfig(BaseModel):
+    """OCR grounding configuration for enhanced extraction"""
+    enabled: bool = Field(
+        default=True,  # RECOMMENDED: Enable by default
+        description="Use OCR text alongside image for better accuracy"
+    )
+    azure_endpoint: Optional[str] = Field(
+        default=None,
+        description="Azure Document Intelligence endpoint (from .env if None)"
+    )
+    azure_api_key: Optional[str] = Field(
+        default=None,
+        description="Azure Document Intelligence API key (from .env if None)"
+    )
+    use_native_markdown: bool = Field(
+        default=True,
+        description="Use Azure's native markdown output (RECOMMENDED)"
+    )
+
+
 class OptimizationConfig(BaseModel):
     """Complete optimization configuration"""
     # LLM configuration
@@ -56,6 +76,12 @@ class OptimizationConfig(BaseModel):
 
     # Image processing
     image_processing: ImageProcessingConfig = Field(default_factory=ImageProcessingConfig)
+
+    # OCR grounding (NEW - RECOMMENDED)
+    ocr_grounding: OCRGroundingConfig = Field(
+        default_factory=OCRGroundingConfig,
+        description="OCR grounding for improved accuracy"
+    )
 
     # Rate limiting
     delay_seconds: float = Field(

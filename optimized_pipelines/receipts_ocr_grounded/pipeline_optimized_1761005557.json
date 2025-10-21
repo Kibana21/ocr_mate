@@ -1,0 +1,41 @@
+{
+  "traces": [],
+  "train": [],
+  "demos": [],
+  "signature": {
+    "instructions": "Extract structured data from the document using BOTH the image and OCR text.\n\nThe OCR text provides the textual content for reference. Use the image for visual context and verification.\n\nExtract the following fields from the document:\n- Merchant Name (text) (required): Name of the store or merchant\n  • Store name at top\n  • Business name\n- Total Amount (currency) (required): Final total amount to pay\n  • Total\n  • Amount due\n  • Grand total\n- Date (date) (required): Transaction date\n  • Date\n  • Transaction date\n\nReturn values in a structured format. Cross-reference between OCR text and image for accuracy.",
+    "fields": [
+      {
+        "prefix": "Document Image:",
+        "description": "Document image for visual context"
+      },
+      {
+        "prefix": "Ocr Text:",
+        "description": "OCR-extracted text from the document for textual reference"
+      },
+      {
+        "prefix": "Extracted Data:",
+        "description": "Extracted structured data"
+      }
+    ]
+  },
+  "lm": {
+    "model": "gemini/gemini-2.0-flash-exp",
+    "model_type": "chat",
+    "cache": true,
+    "num_retries": 3,
+    "finetuning_model": null,
+    "launch_kwargs": {},
+    "train_kwargs": {},
+    "temperature": 0.0,
+    "max_tokens": 4000,
+    "api_key": "AIzaSyBZnZgHTx38vZW4P5HPIX9LUy9UJMQjKrY"
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "3.0.3",
+      "cloudpickle": "3.1"
+    }
+  }
+}

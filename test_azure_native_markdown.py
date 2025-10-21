@@ -29,10 +29,16 @@ def test_native_markdown_extraction():
     print("AZURE NATIVE MARKDOWN EXTRACTION TEST")
     print("="*80)
 
-    receipt_path = "receipt_data/receipt_1.jpg"
+    # Use actual receipt from images folder
+    receipt_path = "images/receipts/IMG_2160.jpg"
 
     if not Path(receipt_path).exists():
         print(f"\n⚠️  Sample document not found: {receipt_path}")
+        print("\n   Available receipts:")
+        receipts_dir = Path("images/receipts")
+        if receipts_dir.exists():
+            for img in sorted(receipts_dir.glob("*.jpg"))[:5]:
+                print(f"     - {img}")
         print("\n   This test demonstrates:")
         print("   1. Azure's native markdown output (RECOMMENDED)")
         print("   2. Comparison with custom markdown formatting")
@@ -125,14 +131,14 @@ def test_markdown_with_tables():
     Test markdown extraction with document containing tables
     """
     print("\n" + "="*80)
-    print("MARKDOWN EXTRACTION WITH TABLES")
+    print("MARKDOWN EXTRACTION WITH MULTIPLE RECEIPTS")
     print("="*80)
 
-    # This would work best with an invoice or document with tables
-    invoice_path = "invoice_data/invoice_1.pdf"
+    # Use actual receipts from images folder
+    receipts_dir = Path("images/receipts")
 
-    if not Path(invoice_path).exists():
-        print(f"\n⚠️  Sample invoice not found: {invoice_path}")
+    if not receipts_dir.exists():
+        print(f"\n⚠️  Receipts folder not found: {receipts_dir}")
         print("\n   Native markdown excels at:")
         print("   - Tables (formatted as markdown tables)")
         print("   - Multi-column layouts")
@@ -172,15 +178,32 @@ New York, NY 10001
 
     service = AzureDocumentIntelligenceService.from_env()
 
-    print("\nExtracting invoice with tables...")
-    markdown = service.extract_markdown(invoice_path)
+    # Get first 3 receipts for testing
+    receipt_files = sorted(receipts_dir.glob("*.jpg"))[:3]
 
-    print("\nMarkdown output:")
-    print("-" * 80)
-    print(markdown)
-    print("-" * 80)
+    print(f"\nExtracting markdown from {len(receipt_files)} receipts...")
 
-    print("\n✅ Tables formatted as markdown!")
+    for i, receipt_path in enumerate(receipt_files, 1):
+        print(f"\n{'='*80}")
+        print(f"Receipt {i}/{len(receipt_files)}: {receipt_path.name}")
+        print('='*80)
+
+        try:
+            markdown = service.extract_markdown(str(receipt_path))
+
+            print("\nMarkdown output (first 800 chars):")
+            print("-" * 80)
+            print(markdown[:800])
+            if len(markdown) > 800:
+                print(f"\n... ({len(markdown) - 800} more characters)")
+            print("-" * 80)
+
+            print(f"\n✓ Successfully extracted {len(markdown)} characters")
+
+        except Exception as e:
+            print(f"\n✗ Failed to extract: {e}")
+
+    print("\n✅ Markdown extraction complete!")
 
 
 def demo_llm_grounding_with_native_markdown():
@@ -193,10 +216,10 @@ def demo_llm_grounding_with_native_markdown():
 
     print("\n📋 Workflow:")
     print("\n1. Extract document as markdown")
-    print("   ocr_markdown = service.extract_markdown('invoice.pdf')")
+    print("   ocr_markdown = service.extract_markdown('images/receipts/IMG_2160.jpg')")
 
     print("\n2. Load document image")
-    print("   image = load_image('invoice.pdf')")
+    print("   image = load_image('images/receipts/IMG_2160.jpg')")
 
     print("\n3. Pass BOTH to LLM")
     print("   result = llm_extractor(")
@@ -227,13 +250,13 @@ import dspy
 ocr_service = AzureDocumentIntelligenceService.from_env()
 
 # Extract markdown (FAST: ~100ms)
-ocr_markdown = ocr_service.extract_markdown('invoice.pdf')
+ocr_markdown = ocr_service.extract_markdown('images/receipts/IMG_2160.jpg')
 
 # Load image
-image = load_and_resize_image('invoice.pdf')
+image = load_and_resize_image('images/receipts/IMG_2160.jpg')
 
 # Load trained pipeline (with OCR grounding enabled)
-pipeline = dspy.Predict.load('pipelines/invoice_ocr_grounded.json')
+pipeline = dspy.Predict.load('pipelines/receipt_ocr_grounded.json')
 
 # Extract with dual input
 result = pipeline(

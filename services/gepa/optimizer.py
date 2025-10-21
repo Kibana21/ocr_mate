@@ -57,6 +57,33 @@ class GEPAOptimizer:
         self.schema_adapter: Optional[SchemaAdapter] = None
         self.metric_function = None
         self.training_converter: Optional[TrainingDataConverter] = None
+        self.ocr_service = None
+
+        # Setup OCR service if grounding is enabled
+        if self.config.ocr_grounding.enabled:
+            self._setup_ocr_service()
+
+    def _setup_ocr_service(self):
+        """Setup Azure OCR service for grounding"""
+        try:
+            from services.ocr import AzureDocumentIntelligenceService
+
+            # Get credentials from config or environment
+            endpoint = self.config.ocr_grounding.azure_endpoint or os.getenv("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")
+            api_key = self.config.ocr_grounding.azure_api_key or os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
+
+            if endpoint and api_key:
+                self.ocr_service = AzureDocumentIntelligenceService(endpoint, api_key)
+                print(f"✓ OCR grounding enabled (Azure Document Intelligence)")
+            else:
+                print("⚠️  OCR grounding enabled but credentials not found")
+                print("   Set AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT and AZURE_DOCUMENT_INTELLIGENCE_KEY")
+                self.config.ocr_grounding.enabled = False
+
+        except ImportError as e:
+            print(f"⚠️  OCR grounding disabled: {e}")
+            print("   Install: pip install azure-ai-documentintelligence")
+            self.config.ocr_grounding.enabled = False
 
     def _setup_rate_limiting(self):
         """Configure rate limiting to avoid API errors"""
@@ -110,6 +137,12 @@ class GEPAOptimizer:
             test_mode=self.config.test_mode
         )
 
+        # Check if we have enough examples for splitting
+        if len(dspy_examples) < 2:
+            # With only 1 example, use it for both training and validation
+            print(f"  ⚠ Only {len(dspy_examples)} example(s) - using for both train and validation")
+            return dspy_examples, dspy_examples
+
         # Split train/val
         train_examples, val_examples = self.training_converter.split_train_val(
             dspy_examples,
@@ -137,8 +170,11 @@ class GEPAOptimizer:
 
         for example in examples:
             try:
-                # Run prediction
-                pred = program(document_image=example.document_image)
+                # Run prediction (with or without OCR grounding)
+                if self.config.ocr_grounding.enabled and hasattr(example, 'ocr_text'):
+                    pred = program(document_image=example.document_image, ocr_text=example.ocr_text)
+                else:
+                    pred = program(document_image=example.document_image)
 
                 # Calculate score
                 score = self.metric_function(example, pred)
@@ -186,10 +222,13 @@ class GEPAOptimizer:
 
             # Step 2: Create DSPy components from schema
             print("\n[2/7] Creating DSPy signature from schema...")
-            self.schema_adapter = SchemaAdapter(self.schema)
+            use_ocr = self.config.ocr_grounding.enabled
+            self.schema_adapter = SchemaAdapter(self.schema, use_ocr_grounding=use_ocr)
             extraction_model = self.schema_adapter.get_extraction_model()
             dspy_signature = self.schema_adapter.get_dspy_signature()
             print(f"  ✓ Created signature with {len(self.schema.fields)} fields")
+            if use_ocr:
+                print(f"  ✓ OCR grounding enabled (image + markdown text)")
 
             # Step 3: Create metric function
             print("\n[3/7] Creating metric function with feedback...")
@@ -203,7 +242,9 @@ class GEPAOptimizer:
                 extraction_model,
                 max_width=self.config.image_processing.max_width,
                 max_height=self.config.image_processing.max_height,
-                jpeg_quality=self.config.image_processing.jpeg_quality
+                jpeg_quality=self.config.image_processing.jpeg_quality,
+                ocr_service=self.ocr_service,  # NEW: Pass OCR service
+                use_ocr_grounding=use_ocr  # NEW: Enable OCR grounding
             )
 
             train_examples, val_examples = self._prepare_training_data(ground_truth_examples)

@@ -318,7 +318,7 @@ class AzureDocumentIntelligenceService:
             >>> result = llm_pipeline(document_image=image, ocr_text=markdown)
         """
         try:
-            from azure.ai.documentintelligence.models import ContentFormat, AnalyzeDocumentRequest
+            from azure.ai.documentintelligence.models import AnalyzeDocumentRequest, DocumentContentFormat
         except ImportError:
             raise ImportError(
                 "Azure Document Intelligence SDK version >= 1.0.0b1 required for markdown output. "
@@ -332,14 +332,16 @@ class AzureDocumentIntelligenceService:
 
         # Read document
         with open(document_path, "rb") as f:
-            document_content = f.read()
+            document_bytes = f.read()
 
-        # Analyze with markdown output format
+        # Create analyze request with bytes
+        analyze_request = AnalyzeDocumentRequest(bytes_source=document_bytes)
+
+        # Analyze with markdown output format (using official API)
         poller = self.client.begin_analyze_document(
-            model_id=model_id,
-            analyze_request=document_content,
-            output_content_format=ContentFormat.MARKDOWN,  # KEY: Native markdown output
-            content_type="application/octet-stream"
+            model_id,
+            analyze_request,
+            output_content_format=DocumentContentFormat.MARKDOWN  # Native markdown output
         )
 
         # Wait for result
@@ -371,18 +373,21 @@ class AzureDocumentIntelligenceService:
             Formatted markdown string
         """
         try:
-            from azure.ai.documentintelligence.models import ContentFormat, AnalyzeDocumentRequest
+            from azure.ai.documentintelligence.models import AnalyzeDocumentRequest, DocumentContentFormat
         except ImportError:
             raise ImportError(
                 "Azure Document Intelligence SDK version >= 1.0.0b1 required. "
                 "Upgrade with: pip install --upgrade azure-ai-documentintelligence"
             )
 
-        # Analyze from URL
+        # Create analyze request with URL
+        analyze_request = AnalyzeDocumentRequest(url_source=url)
+
+        # Analyze from URL with markdown output
         poller = self.client.begin_analyze_document(
-            model_id=model_id,
-            analyze_request=AnalyzeDocumentRequest(url_source=url),
-            output_content_format=ContentFormat.MARKDOWN
+            model_id,
+            analyze_request,
+            output_content_format=DocumentContentFormat.MARKDOWN
         )
 
         result = poller.result()
